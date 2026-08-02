@@ -3,7 +3,7 @@
 **Do not open a public issue for a security problem.**
 
 Report it through
-[private vulnerability reporting](https://github.com/{{GITHUB_OWNER}}/{{PROJECT_SLUG}}/security/advisories/new),
+[private vulnerability reporting](https://github.com/kvugs/pokebattlebench/security/advisories/new),
 which opens a draft advisory only maintainers can see.
 
 Include what an attacker can do, the smallest reproduction you have, and the

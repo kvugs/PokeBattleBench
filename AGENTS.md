@@ -5,17 +5,6 @@ Notes for AI coding agents working in this repository.
 Humans should read [CONTRIBUTING.md](CONTRIBUTING.md) instead - this file only
 adds what an agent cannot infer from the code.
 
-## Before anything else
-
-If `pyproject.toml` still contains `{{PROJECT_SLUG}}`, first determine which mode
-you are in:
-
-- **Creating a project from the template:** run
-  `just init <slug> <owner> "<description>"` before project work.
-- **Maintaining this template repository:** never initialize the working tree.
-  Keep the placeholders and validate a disposable materialization with
-  `just template-ci`.
-
 ## Commands
 
 Read the [Justfile](Justfile) file as it lists all current available commands.
@@ -33,7 +22,7 @@ a disposable initialized copy and runs `just ci` plus the hook checks there.
   `just format` for Python and `just hooks` for all file types.
 - **Types are a required gate.** `basedpyright` runs in `strict` mode. New
   public functions get annotations.
-- **`src/` layout.** The package lives in `src/{{PACKAGE_NAME}}/`; tests import
+- **`src/` layout.** The package lives in `src/pokebattlebench/`; tests import
   it as an installed package, never by relative path.
 - **Tests marked `external`** (integration, network, model calls) are excluded
   from the required gate. Mark anything whose result something outside this

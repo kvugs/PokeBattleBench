@@ -3,8 +3,8 @@
 from importlib import import_module, metadata
 from pathlib import Path
 
-DISTRIBUTION = "{{PROJECT_SLUG}}"
-PACKAGE = "{{PACKAGE_NAME}}"
+DISTRIBUTION = "pokebattlebench"
+PACKAGE = "pokebattlebench"
 
 
 def main() -> None:

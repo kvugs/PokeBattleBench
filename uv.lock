@@ -473,7 +473,7 @@ wheels = [
 ]
 
 [[package]]
-name = "{{PROJECT_SLUG}}"
+name = "pokebattlebench"
 version = "0.0.0"
 source = { editable = "." }
 

@@ -4,7 +4,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if ! grep -qF '{{PROJECT_SLUG}}' "$REPO_ROOT/pyproject.toml"; then
+if "$REPO_ROOT/scripts/init-project.sh" --check >/dev/null 2>&1; then
   echo "template-ci: initialized project - template-only checks do not apply."
   exit 0
 fi
@@ -56,8 +56,8 @@ if ./scripts/init-project.sh quote-test example-org 'Valid description' \
   exit 1
 fi
 grep -qF 'unknown template placeholder' init-error.txt
-grep -qF '{{PROJECT_SLUG}}' pyproject.toml
-[ -d 'src/{{PACKAGE_NAME}}' ]
+grep -qF 'pokebattlebench' pyproject.toml
+[ -d 'src/pokebattlebench' ]
 rm init-error.txt unknown-placeholder.txt
 
 # A single quote style is escaped for TOML and Python while remaining natural

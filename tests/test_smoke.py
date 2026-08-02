@@ -3,13 +3,13 @@
 Delete these once the real code has its own tests.
 """
 
-import {{PACKAGE_NAME}}
+import pokebattlebench
 
 
 def test_package_imports() -> None:
-    assert {{PACKAGE_NAME}}.__doc__ is not None
+    assert pokebattlebench.__doc__ is not None
 
 
 def test_version_is_a_string() -> None:
-    assert isinstance({{PACKAGE_NAME}}.__version__, str)
-    assert {{PACKAGE_NAME}}.__version__
+    assert isinstance(pokebattlebench.__version__, str)
+    assert pokebattlebench.__version__
