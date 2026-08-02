@@ -63,6 +63,18 @@ Pick the form that fits - bug, feature, documentation, or umbrella - and two thi
 Blank issues stay enabled for reports that fit no form.
 The same two expectations apply there - the form is a reminder, not the reason.
 
+### Choose by available time
+
+Issues may carry one `effort:` label to help you find work that fits the time
+you can contribute: `effort: hours`, `effort: day`, or
+`effort: multiple days`. These estimate focused effort for someone reasonably
+familiar with the relevant area, including implementation, tests,
+documentation, and PR follow-up. They are planning aids, not deadlines or
+experience requirements; taking longer is entirely normal.
+
+An issue without an `effort:` label has not been estimated yet. Use at most one
+effort label, and revisit it when investigation changes the understood scope.
+
 ### Keep an issue atomic
 
 Aim for one atomic issue per piece of work: an indivisible unit that either completes or does not happen at all, with no half-applied state in between.

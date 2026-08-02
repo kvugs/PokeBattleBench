@@ -13,6 +13,14 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-02 - Label issues by expected focused effort
+
+**What:** Atomic issues may receive one of three mutually exclusive estimates: `effort: hours`, `effort: day`, or `effort: multiple days`. The setup script creates them, and contributors maintain them manually as scope becomes clearer.
+
+**Why:** Contributors to this hobby project often choose work by the time they can offer. A coarse estimate makes that constraint visible before someone commits to an issue, lowering the cost of starting and reducing abandoned work. “Focused effort” distinguishes the estimate from a deadline or elapsed calendar time.
+
+**Result:** Contributors can filter for work that fits their availability. Estimates remain deliberately coarse and optional; no automation enforces them, and maintainers update or remove stale estimates during normal issue triage.
+
 ## 2026-08-02 - License PokeBattleBench under Apache-2.0
 
 **What:** PokeBattleBench's original code is licensed under Apache-2.0. Third-party code keeps its own license and attribution.
