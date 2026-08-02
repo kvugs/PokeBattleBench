@@ -13,6 +13,14 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-02 - License PokeBattleBench under Apache-2.0
+
+**What:** PokeBattleBench's original code is licensed under Apache-2.0. Third-party code keeps its own license and attribution.
+
+**Why:** Apache-2.0 is permissive while providing an explicit patent grant and clear contribution terms. It is compatible with the MIT-licensed Pokémon Showdown server and simulator, which PokeBattleBench can use without imposing copyleft on its original code. Pokémon Showdown's client is separately licensed under AGPL-3.0, so copying or modifying client code requires preserving those terms or obtaining separate permission.
+
+**Result:** Contributors and users have clear rights to use, modify, and redistribute PokeBattleBench. Any incorporated Showdown code must remain identified under its upstream license, and this license does not grant rights to Pokémon trademarks or assets.
+
 ## 2026-07-30 - Keep Lychee outside Dependabot temporarily
 
 **What:** The pre-commit Dependabot configuration ignores only Lychee. Its immutable `lychee-vX.Y.Z` revision remains pinned in `.pre-commit-config.yaml` and is updated manually; every other remote hook stays Dependabot-managed.
