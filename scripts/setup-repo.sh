@@ -36,9 +36,8 @@ label "documentation" "0075ca" "Docs are missing, wrong, or hard to follow"
 label "architecture" "5319e7" "Changes system structure and needs an ADR"
 # Pick at most one effort label per issue. These estimate focused work rather
 # than elapsed time or a delivery deadline.
-label "effort: hours" "0e8a16" "Expected to take a few focused hours"
-label "effort: day" "fbca04" "Expected to take about one focused day"
-label "effort: multiple days" "d93f0b" "Expected to take multiple focused days"
+label "time:hours" "0e8a16" "Expected to take a few focused hours"
+label "time:days" "fbca04" "Expected to take one to several focused days"
 # The one non-atomic issue type: a goal tracked as a checklist of atomic
 # sub-issues. .github/workflows/issue-hygiene.yml keeps this label and the ☂️
 # title prefix in step, so either one finds every umbrella.

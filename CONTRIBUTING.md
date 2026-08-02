@@ -65,15 +65,17 @@ The same two expectations apply there - the form is a reminder, not the reason.
 
 ### Choose by available time
 
-Issues may carry one `effort:` label to help you find work that fits the time
-you can contribute: `effort: hours`, `effort: day`, or
-`effort: multiple days`. These estimate focused effort for someone reasonably
+Issues may carry one `time:` label to help you find work that fits the time you
+can contribute: `time:hours` for a few focused hours or `time:days` for one to
+several focused days. These estimate focused effort for someone reasonably
 familiar with the relevant area, including implementation, tests,
 documentation, and PR follow-up. They are planning aids, not deadlines or
 experience requirements; taking longer is entirely normal.
 
-An issue without an `effort:` label has not been estimated yet. Use at most one
-effort label, and revisit it when investigation changes the understood scope.
+An issue without a `time:` label has not been estimated yet. Use at most one
+time label, and revisit it when investigation changes the understood scope. If
+the expected implementation approaches a focused week, split it into atomic
+sub-issues instead of adding a larger time bucket.
 
 ### Keep an issue atomic
 

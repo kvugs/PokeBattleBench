@@ -13,13 +13,13 @@ provenance; add project-specific decisions above them.
 
 ---
 
-## 2026-08-02 - Label issues by expected focused effort
+## 2026-08-02 - Label issues by expected focused time
 
-**What:** Atomic issues may receive one of three mutually exclusive estimates: `effort: hours`, `effort: day`, or `effort: multiple days`. The setup script creates them, and contributors maintain them manually as scope becomes clearer.
+**What:** Atomic issues may receive one of two mutually exclusive estimates: `time:hours` or `time:days`. The setup script creates them, and contributors maintain them manually as scope becomes clearer. Work approaching a focused week is split into atomic sub-issues instead of receiving a larger bucket.
 
 **Why:** Contributors to this hobby project often choose work by the time they can offer. A coarse estimate makes that constraint visible before someone commits to an issue, lowering the cost of starting and reducing abandoned work. “Focused effort” distinguishes the estimate from a deadline or elapsed calendar time.
 
-**Result:** Contributors can filter for work that fits their availability. Estimates remain deliberately coarse and optional; no automation enforces them, and maintainers update or remove stale estimates during normal issue triage.
+**Result:** Contributors can filter for work that fits their availability, while the absence of a week-sized label reinforces the repository's atomic-issue convention. Estimates remain deliberately coarse and optional; no automation enforces them, and maintainers update or remove stale estimates during normal issue triage.
 
 ## 2026-08-02 - License PokeBattleBench under Apache-2.0
 
