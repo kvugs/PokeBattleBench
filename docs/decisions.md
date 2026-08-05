@@ -13,6 +13,17 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-05 - Keep CodeRabbit assertive but advisory during rollout
+
+**What:** Use CodeRabbit's hosted GitHub App with a repository-owned `.coderabbit.yaml` configuration.
+Automatically review non-draft contributor pull requests, skip Dependabot, keep summaries in the walkthrough, and wait up to 15 minutes for existing GitHub checks.
+
+**Why:** An assertive profile matches the repository's engineering standards, while an advisory rollout lets contributors calibrate AI feedback before it can block merging.
+Repository-owned settings are visible and reviewable, and the existing CI remains the authority for deterministic lint, type, test, and package gates.
+
+**Result:** Contributors receive consistent reviews without another workflow, dependency, secret, or duplicate Ruff run.
+CodeRabbit reads `AGENTS.md` and CI results for context, and `request_changes_workflow` is the single explicit switch to enable only after the team trusts the review signal.
+
 ## 2026-08-02 - Label issues by expected focused time
 
 **What:** Atomic issues may receive one of two mutually exclusive estimates: `time:hours` or `time:days`. The setup script creates them, and contributors maintain them manually as scope becomes clearer. Work approaching a focused week is split into atomic sub-issues instead of receiving a larger bucket.
