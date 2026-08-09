@@ -1,4 +1,4 @@
-# Pokebattlebench
+# PokeBattleBench
 
 A laboratory where increasingly capable Pokémon AIs can be created, tested, understood, and challenged.
 
@@ -7,7 +7,11 @@ A laboratory where increasingly capable Pokémon AIs can be created, tested, und
 [![uv](https://img.shields.io/badge/deps-uv-261230)](https://docs.astral.sh/uv/)
 [![Ruff](https://img.shields.io/badge/style-ruff-D7FF64)](https://docs.astral.sh/ruff/)
 
-> **Status:** under construction 👷
+> **Status:** establishing the first server-connected autonomous battle.
+
+The MVP connects two project-owned autonomous agents to a local [Pokémon Showdown](https://github.com/smogon/pokemon-showdown) server.
+Each agent must receive the battle state, choose legal actions, and continue until the server declares a winner.
+See the [agreed project direction](docs/project-direction.md) for the accepted scope, deferred work, and remaining questions.
 
 ## For contributors
 
@@ -36,5 +40,6 @@ run `just template-ci`; it materializes and verifies a disposable copy.
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - how to set up and open PRs.
 - **[AGENTS.md](AGENTS.md)** - rules written by humans for AI coding agents.
 - **[SECURITY.md](SECURITY.md)** - how to report a vulnerability privately.
+- **[docs/project-direction.md](docs/project-direction.md)** - the agreed learning direction and MVP scope.
 - **[docs/decisions.md](docs/decisions.md)** - the lightweight decision log.
 - **[docs/adr/](docs/adr/)** - architecture decision records (the heavier, numbered decisions).
