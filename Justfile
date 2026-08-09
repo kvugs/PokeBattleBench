@@ -124,7 +124,7 @@ package: _ready
 audit: _ready
     uv audit --locked --preview-features audit-command
 
-# When: before you push or open a PR, after rebasing or merging main, and when
+# When: before you push or open a PR, after updating from dev, and when
 # CI is red and you want it reproduced locally. These are the four generated-
 # project jobs in ci.yml; template source also runs `just template-ci`.
 ci: lint types test package

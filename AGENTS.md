@@ -32,9 +32,13 @@ a disposable initialized copy and runs `just ci` plus the hook checks there.
 - **Never edit `uv.lock` by hand.** Change `pyproject.toml` and run `just lock`.
 - **Use Conventional Commits.** Commitizen checks `<type>: <description>` (or
   `<type>(<scope>): <description>`) at `commit-msg`. The PR title uses the same
-  shape because it becomes the squash commit on `main`.
-- **Do not commit to `main`.** Branch, open a PR, squash-merge. A pre-commit
-  hook enforces this locally.
+  shape because it becomes the squash commit on `dev` and remains in `main`
+  when a checkpoint is promoted.
+- **Do not commit to `main` or `dev`.** Start feature branches from `dev`, open
+  PRs back to `dev`, and squash-merge. Only `dev`, `hotfix/*`, and Dependabot
+  security branches may target `main`; `dev` release PRs use merge commits.
+  Backport every direct `main` hotfix or security update to `dev`. A pre-commit
+  hook and repository rulesets enforce this workflow.
 - **Every PR references an existing issue.** Put `Closes #123` in the PR
   description, or `Refs #123` if it does not finish the issue. If none exists,
   open one before opening the PR. Only typo/formatting fixes are exempt, and

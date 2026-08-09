@@ -5,8 +5,8 @@
 #   ./scripts/setup-repo.sh              # uses the repo of the current dir
 #   ./scripts/setup-repo.sh owner/name   # or target an explicit repo
 #
-# Applies: a small label set, squash-only merge settings, security features, and
-# the solo-compatible protect-main ruleset from .github/rulesets/main.json.
+# Applies: a small label set, branch-specific merge settings, security features,
+# a persistent dev branch, and the rulesets in .github/rulesets/.
 set -euo pipefail
 
 if ! command -v gh >/dev/null 2>&1; then
@@ -66,15 +66,17 @@ for stale in \
 done
 
 # --- Repo merge settings -----------------------------------------------------
-echo "Merge settings: squash-only, auto-merge on, delete head branches"
+echo "Merge settings: squash + merge commits, auto-merge on, delete head branches"
 gh api -X PATCH "repos/$REPO" \
   -F allow_squash_merge=true \
-  -F allow_merge_commit=false \
+  -F allow_merge_commit=true \
   -F allow_rebase_merge=false \
   -F allow_auto_merge=true \
   -F delete_branch_on_merge=true \
   -f squash_merge_commit_title=PR_TITLE \
-  -f squash_merge_commit_message=PR_BODY >/dev/null
+  -f squash_merge_commit_message=PR_BODY \
+  -f merge_commit_title=PR_TITLE \
+  -f merge_commit_message=PR_BODY >/dev/null
 
 # --- Security features -------------------------------------------------------
 # Free on public repos. Each one is a whole class of mistake we stop making by
@@ -101,19 +103,37 @@ else
   echo "  skipped: secret scanning (needs a public repo or GitHub Advanced Security)"
 fi
 
-# --- Branch protection ruleset ----------------------------------------------
-# Create protect-main, or update it if it already exists. It requires PRs and
-# up-to-date CI but zero approvals by default, so a solo author is never locked
-# out. Teams can raise the review count in main.json when a reviewer is reliable.
-echo "Ruleset: protect-main"
-RULESET_JSON="$SCRIPT_DIR/../.github/rulesets/main.json"
-EXISTING_ID="$(gh api "repos/$REPO/rulesets" -q '.[] | select(.name=="protect-main") | .id' 2>/dev/null || true)"
-if [ -n "$EXISTING_ID" ]; then
-  gh api -X PUT "repos/$REPO/rulesets/$EXISTING_ID" --input "$RULESET_JSON" >/dev/null
-  echo "  updated (id $EXISTING_ID)"
+# --- Persistent integration branch ------------------------------------------
+# Create dev from the current main tip before protecting it. The bootstrap PR
+# must merge first so dev starts with the workflow and required check names that
+# its ruleset expects.
+echo "Integration branch: dev"
+if gh api "repos/$REPO/branches/dev" >/dev/null 2>&1; then
+  echo "  exists"
 else
-  gh api -X POST "repos/$REPO/rulesets" --input "$RULESET_JSON" >/dev/null
-  echo "  created"
+  MAIN_SHA="$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')"
+  gh api -X POST "repos/$REPO/git/refs" \
+    -f ref="refs/heads/dev" \
+    -f sha="$MAIN_SHA" >/dev/null
+  echo "  created from main ($MAIN_SHA)"
 fi
+
+# --- Branch protection rulesets ---------------------------------------------
+# dev stays linear, current, and squash-only. main accepts merge commits from
+# dev and tightly-scoped hotfix/security exceptions. Both require PRs, resolved
+# threads, deterministic CI, and zero approvals.
+for BRANCH in main dev; do
+  RULESET_NAME="protect-$BRANCH"
+  RULESET_JSON="$SCRIPT_DIR/../.github/rulesets/$BRANCH.json"
+  echo "Ruleset: $RULESET_NAME"
+  EXISTING_ID="$(gh api "repos/$REPO/rulesets" -q ".[] | select(.name==\"$RULESET_NAME\") | .id" 2>/dev/null || true)"
+  if [ -n "$EXISTING_ID" ]; then
+    gh api -X PUT "repos/$REPO/rulesets/$EXISTING_ID" --input "$RULESET_JSON" >/dev/null
+    echo "  updated (id $EXISTING_ID)"
+  else
+    gh api -X POST "repos/$REPO/rulesets" --input "$RULESET_JSON" >/dev/null
+    echo "  created"
+  fi
+done
 
 echo "Done. Review at: https://github.com/$REPO/settings/rules"
