@@ -81,7 +81,9 @@ Treat each merged security update as a hotfix and backport it to `dev`.
 | Push after merge to `main` | Yes | Yes | Not applicable |
 | Nightly schedule | Not applicable | Runs against default-branch `main` | Not applicable |
 
-The required jobs are `template`, `lint`, `types`, `test-fast`, and `package`.
+The required jobs are `template`, `lint`, `types`, `test-fast`, `package`, and `uv-lower-bound`.
+The first five use the repository's preferred uv version, while `uv-lower-bound` repeats the complete local gate with the oldest supported uv version.
+This keeps GitHub's hosted Dependabot updater compatible without advertising an untested development-tool range.
 External tests, coverage, dependency auditing, link checking, Trivy, CodeQL, and issue-link reporting remain advisory because their results can depend on systems outside the repository or are informational by design.
 
 ## One-time migration after the bootstrap PR
