@@ -51,7 +51,7 @@ packages = ["src/pokebattlebench"]
 [tool.uv]
 # Keep local uv behavior within the range exercised by this template. CI pins
 # one version inside the range; widening it is a deliberate compatibility call.
-required-version = ">=0.12.0,<0.13"
+required-version = ">=0.11.31,<0.13"
 
 # Runtime requirements describe library compatibility; uv.lock records the exact
 # environment tested here. `just add-dev` overrides this to exact for tools whose
