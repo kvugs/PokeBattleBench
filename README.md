@@ -7,11 +7,7 @@ A laboratory where increasingly capable Pokémon AIs can be created, tested, und
 [![uv](https://img.shields.io/badge/deps-uv-261230)](https://docs.astral.sh/uv/)
 [![Ruff](https://img.shields.io/badge/style-ruff-D7FF64)](https://docs.astral.sh/ruff/)
 
-> **Status:** establishing the first server-connected autonomous battle.
-
-The MVP connects two project-owned autonomous agents to a local [Pokémon Showdown](https://github.com/smogon/pokemon-showdown) server.
-Each agent must receive the battle state, choose legal actions, and continue until the server declares a winner.
-See the [agreed project direction](docs/project-direction.md) for the accepted scope, deferred work, and remaining questions.
+> **Status:** under construction 👷
 
 ## For contributors
 
