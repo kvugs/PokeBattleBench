@@ -8,6 +8,7 @@ Install [Git](https://git-scm.com/),
 [uv](https://docs.astral.sh/uv/getting-started/installation/), and
 [Just](https://just.systems/man/en/packages.html). uv installs the project's
 requested Python version automatically.
+The supported uv range starts at `0.11.31` and stays below `0.13`; the project rejects versions outside that range.
 
 ```bash
 just install                                     # locked deps + git hooks

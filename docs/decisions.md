@@ -13,6 +13,16 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-09 - Test the oldest supported uv release in required CI
+
+**What:** Support `uv >=0.11.31,<0.13` and add a required `uv-lower-bound` job that runs the complete local CI gate with exactly `uv 0.11.31`.
+Keep the primary CI jobs on the repository's preferred `uv 0.12` release.
+
+**Why:** GitHub's hosted Dependabot updater uses `uv 0.11.31`, but the previous `>=0.12.0` guard stopped it before dependency updates began.
+An isolated test proved that `0.11.31` can sync and regenerate the lockfile, update direct and transitive dependencies, audit the environment, and pass the complete gate before and after an update.
+
+**Result:** Dependabot can maintain Python dependencies against `dev`, contributors retain a bounded tool range, and required CI prevents future changes from silently breaking the supported lower bound.
+
 ## 2026-08-09 - Prove the server-connected battle before expanding the laboratory
 
 **What:** Limit the MVP to two project-owned autonomous agents completing one legal battle through a local Pokémon Showdown server.
