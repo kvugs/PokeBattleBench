@@ -13,6 +13,17 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-09 - Prove the server-connected battle before expanding the laboratory
+
+**What:** Limit the MVP to two project-owned autonomous agents completing one legal battle through a local Pokémon Showdown server.
+Defer evaluation suites, scaling, training pipelines, MLOps, advanced agent strategies, and a dedicated UI until that end-to-end flow works.
+
+**Why:** The collaborators first want to learn WebSockets, client-server communication, asynchronous state management, and maintainable module design.
+Adding later laboratory layers before the basic battle works would hide these fundamentals behind unrelated complexity and leave every later feature dependent on an unproven boundary.
+
+**Result:** MVP work prioritizes a clean Python client library, legal decisions, clear failure behavior, and one complete battle.
+Later work can add evaluation and ML systems against a small, tested agent boundary instead of redesigning the integration around each experiment.
+
 ## 2026-08-05 - Keep CodeRabbit assertive but advisory during rollout
 
 **What:** Use CodeRabbit's hosted GitHub App with a repository-owned `.coderabbit.yaml` configuration.

@@ -28,4 +28,5 @@ Anything lighter - a tool choice, a convention, a small tradeoff - goes in
 
 | # | Title | Status |
 |---|---|---|
-| - | _No ADRs yet._ | - |
+| 0001 | [Use a local Pokémon Showdown server for MVP battles](0001-use-a-local-pokemon-showdown-server.md) | Accepted |
+| 0002 | [Build the agent client library before adopting `poke-env`](0002-build-the-agent-client-library.md) | Accepted |
