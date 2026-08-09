@@ -14,8 +14,17 @@ just install                                     # locked deps + git hooks
 just ci                                          # the complete required gate
 ```
 
-Create a branch before changing files. Direct pushes to `main` are blocked
-locally and by the repository ruleset.
+Create feature branches from the latest `dev` and open their PRs back to `dev`.
+Direct commits to the shared `main` and `dev` branches are blocked locally and by repository rulesets.
+
+```bash
+git fetch origin
+git switch dev
+git pull --ff-only
+git switch -c feat/short-description
+```
+
+Read [Development workflow](docs/development-workflow.md) for releases, hotfixes, Dependabot security updates, and the one-time repository migration.
 
 ## Daily workflow
 
@@ -39,7 +48,8 @@ of `just ci` because a check that rewrites what it checks cannot gate a merge.
 Tests marked `external`, coverage, dependency auditing, external-link checking, Trivy, CodeQL, and the `issue-link` PR check are advisory.
 A red advisory check should still be understood; it is non-blocking so a flaky service does not lock the repository, not because failures are unimportant.
 
-Most of those checks also run nightly against `main`, because they depend on things no commit here controls: an upstream API changes shape, or a new advisory lands against a dependency that was already locked.
+Required and advisory checks run on PRs and pushes to both protected branches.
+Most advisory checks also run nightly against default-branch `main`, because they depend on things no commit here controls: an upstream API changes shape, or a new advisory lands against a dependency that was already locked.
 Pull requests cannot catch that, since they only run when someone pushes.
 A failed nightly run opens or comments on one tracking issue, and the next green run closes it again.
 While that issue is open, treat it as real work: it is the only thing keeping an advisory check from being ignored indefinitely.
@@ -107,7 +117,8 @@ Searching `☂️` in the title and filtering on `label:umbrella` therefore retu
 Commit messages use [Conventional Commits](https://www.conventionalcommits.org/):
 `<type>: <description>` or `<type>(<scope>): <description>`. Commitizen checks
 this before Git creates the commit. Use the same form for the PR title because
-GitHub uses that title for the squash commit on `main`.
+GitHub uses that title for the squash commit on `dev`, which remains part of
+`main` after a release merge.
 
 **Every PR references an issue that already exists**, and that reference belongs in the description, not only in the branch name.
 Write `Closes #123` and the merge closes the issue for you.
@@ -129,7 +140,7 @@ For issues, atomicity is a guideline. For pull requests it is close to a hard ru
 An oversized PR results in slow reviews, less careful reviews, and the defect it hides is the one nobody thought to look for.
 
 - **One problem per PR.** The description should name a single problem and the change that solves it. Two problems, however small, are two PRs.
-- **The title test.** The title becomes the squash commit on `main`, so write it as a useful commit message. If an honest title needs an "and", you have two PRs.
+- **The title test.** The title becomes the squash commit on `dev`, so write it as a useful commit message. If an honest title needs an "and", you have two PRs.
 - **Refactors travel alone.** A rename, move, or reformat mixed into a behavior change buries the behavior change in diff noise, which is exactly where a bug survives review.
 - **One sub-issue, one PR.** A PR that closes an ☂️ umbrella issue is too big by construction. Land its children separately, groundwork first, and let the umbrella close itself when the last one merges.
 - **One sitting.** If a reviewer cannot hold the whole diff in their head at once, split it. That, not a line count, is the real limit.
@@ -137,8 +148,12 @@ An oversized PR results in slow reviews, less careful reviews, and the defect it
 ### Review and merge
 
 - Review is encouraged whenever another maintainer is available.
-  The template requires zero approvals by default so a solo author cannot be locked out; teams with reliable reviewers should raise the count in [`.github/rulesets/main.json`](.github/rulesets/main.json).
+  Both protected branches require zero approvals so a collaborator can finish work without waiting for another person's availability.
 - Resolve review threads and update the branch before merging.
+- Feature PRs target `dev` and use squash merge.
+- Stable checkpoint PRs come from `dev`, target `main`, and use a merge commit.
+- Ordinary branches cannot target `main`.
+- A direct `hotfix/*` or Dependabot security PR into `main` is exceptional and must be backported to `dev` through a follow-up PR.
 
 ## Dependencies
 
@@ -160,10 +175,9 @@ pre-commit revisions update through Dependabot rather than `autoupdate`, which
 can select mutable aliases such as `v1` or `nightly`. Lychee is the exception:
 its `lychee-vX.Y.Z` tags currently crash Dependabot's pre-commit version parser,
 so update that immutable revision manually until the parser supports it.
-Dependabot groups and auto-merges only development-tool minor/patch updates
-after required CI passes. Runtime dependencies, Actions, pre-commit hooks, and
-major updates remain human-reviewed because SemVer does not make behavior
-changes risk-free.
+Dependabot sends scheduled version updates to `dev` and auto-merges only eligible development-tool minor or patch updates after required CI passes.
+Dependabot security updates always target default-branch `main`; merge an urgent security update there, then backport it to `dev` immediately.
+Runtime dependencies, Actions, pre-commit hooks, and major updates remain human-reviewed because SemVer does not make behavior changes risk-free.
 
 ## Decisions and releases
 
@@ -171,5 +185,6 @@ Record non-obvious tradeoffs in [`docs/decisions.md`](docs/decisions.md). Decisi
 that reshape module boundaries, data models, or system structure get an ADR in
 [`docs/adr/`](docs/adr/).
 
-There is no hand-maintained changelog. GitHub generates release notes from
-squash-merged PRs and [`.github/release.yml`](.github/release.yml).
+There is no hand-maintained changelog.
+GitHub generates release notes from the PR history and [`.github/release.yml`](.github/release.yml).
+Tags and GitHub Releases explicitly target a stable checkpoint on `main`.

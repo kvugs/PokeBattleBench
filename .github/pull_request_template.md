@@ -32,5 +32,6 @@ Closes #
 - [ ] Tests and docs changed with behavior, where appropriate
 - [ ] Non-obvious reasoning is recorded in `docs/decisions.md` or an ADR
 
-<!-- The PR title becomes the squash commit on `main`. Use Conventional Commits:
+<!-- Feature PRs target `dev`; checkpoint PRs go from `dev` to `main`.
+     The PR title becomes the squash commit on `dev`. Use Conventional Commits:
      `feat: add task export`, `fix(api): reject empty names`, `docs: clarify setup`. -->
