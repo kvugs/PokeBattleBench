@@ -24,6 +24,8 @@ Look for opportunities to prefactor the code to make the implementation easier. 
 
 Break the work into **indivisible and irreducible** thin vertical issue slices.
 
+#### Vertical slice rules
+
 - Each slice cuts a narrow but COMPLETE path through every layer (schema, API, UI, tests) - vertical, NOT a horizontal slice of one layer
 - A completed slice is demoable or verifiable on its own
 - Any prefactoring should be done first
@@ -65,7 +67,10 @@ Work the **frontier**: any issue whose blockers are all done. For a purely linea
 
 Do NOT close or modify any parent issue.
 
+#### Local issue template
+
 ```markdown
+
 # <NN> - <Issue title>
 
 **What to build:** the end-to-end behaviour this issue makes work, from the user's perspective - not a layer-by-layer implementation list.
@@ -76,11 +81,15 @@ Do NOT close or modify any parent issue.
 
 - [ ] Acceptance criterion 1
 - [ ] Acceptance criterion 2
+
 ```
 
 Use the existing GitHub Issue Templates where applicable else default to creating a blank issue with the following as a template:
 
+#### GitHub issue template
+
 ```markdown
+
 ## Parent
 
 A reference to the parent issue on GitHub (if the source was an existing issue, otherwise omit this section).
@@ -107,6 +116,7 @@ Drag files straight into this box. A rough sketch of the interface, a flow diagr
 ## Blocked by
 
 - A reference to each blocking issue, or "None - can start immediately".
+
 ```
 
 In either form, avoid specific file paths or code snippets - they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it and note briefly that it came from a prototype. Trim to the decision-rich parts - not a working demo, just the important bits.

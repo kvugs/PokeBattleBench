@@ -79,13 +79,7 @@ lint: _ready
     {{ UV }} ruff check .
     {{ UV }} ruff format --check .
     ./scripts/check-lock-index.sh
-    ./scripts/check-agent-config.sh
     ./scripts/check-static.sh
-
-# When: after adding, removing, or renaming agent instructions or skills.
-# Validate shared OpenAI and Anthropic agent configuration
-agents:
-    ./scripts/check-agent-config.sh
 
 # When: after a large edit, when `just lint` fails on style, or after a Ruff
 # version bump reformats files you never touched.

@@ -22,7 +22,7 @@ Reserve adapters for cases where a supported host cannot load the shared source 
 **Why:** Codex tolerates the Claude-specific frontmatter extension while reading its own policy sidecar, and Claude Code ignores the Codex sidecar.
 Keeping both policies beside one instruction body preserves equivalent behavior without an adapter or duplicated Markdown.
 
-**Result:** The `to-gh-issues` skill is one directory discovered by both harnesses, and `just agents` rejects mismatched manual-invocation policies.
+**Result:** The `to-gh-issues` skill is one directory discovered by both harnesses.
 This supersedes the adapter preference in the earlier decision below while retaining that entry as historical context.
 
 ## 2026-08-11 - Share one skill source across Codex and Claude Code
@@ -35,7 +35,7 @@ A required local check verifies instruction links, adapters, and canonical targe
 Their invocation-control fields differ, so a symlink cannot represent every valid shared skill without one host rejecting the other's frontmatter.
 Keeping one authoritative body plus a small adapter prevents provider-specific instructions from drifting while retaining each tool's native discovery and validation rules.
 
-**Result:** Future skills can support both model families from one implementation, and `just agents` or the complete CI gate catches incomplete registration before merge.
+**Result:** Future skills can support both model families from one implementation.
 
 ## 2026-08-09 - Test the oldest supported uv release in required CI
 

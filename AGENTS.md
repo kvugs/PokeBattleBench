@@ -14,21 +14,6 @@ Always run `just ci` before claiming generated-project work is done. When the
 working tree is the template source, run `just template-ci` instead; it creates
 a disposable initialized copy and runs `just ci` plus the hook checks there.
 
-## Agent skills
-
-Keep project skills in `.agents/skills/<skill-name>/` as the canonical source.
-For Claude Code discovery, add a relative directory symlink at
-`.claude/skills/<skill-name>` pointing to the canonical skill directory.
-Keep host-specific policy in the shared directory when the other host tolerates
-the extension.
-For a manual-only skill, set `disable-model-invocation: true` in `SKILL.md` for
-Claude Code and `policy.allow_implicit_invocation: false` in
-`agents/openai.yaml` for Codex.
-Use a minimal host adapter only when a supported host cannot load the shared
-skill correctly.
-Never duplicate full skill instructions because copies can drift.
-Run `just agents` after adding, removing, or renaming a skill.
-
 ## Conventions
 
 - **Ruff is the Python style authority.** shfmt owns shell formatting and
