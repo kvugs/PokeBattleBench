@@ -15,11 +15,13 @@ provenance; add project-specific decisions above them.
 
 ## 2026-08-11 - Share one skill source across Codex and Claude Code
 
-**What:** Store project skills canonically under `.agents/skills/`, link each skill directory into `.claude/skills/`, and link `CLAUDE.md` to `AGENTS.md`.
-A required local check verifies the instruction link and rejects missing, stale, or copied Claude skill entries.
+**What:** Store project skills canonically under `.agents/skills/`, normally link each skill directory into `.claude/skills/`, and link `CLAUDE.md` to `AGENTS.md`.
+When a skill needs Claude-only frontmatter, use a minimal Claude adapter that declares and loads the canonical skill instead of copying its instructions.
+A required local check verifies instruction links, adapters, and canonical targets.
 
 **Why:** Codex and Claude Code discover repository skills from different directories, but both support directory symlinks and the same `SKILL.md` core format.
-Keeping one real copy prevents provider-specific instructions from drifting while retaining each tool's native discovery path.
+Their invocation-control fields differ, so a symlink cannot represent every valid shared skill without one host rejecting the other's frontmatter.
+Keeping one authoritative body plus a small adapter prevents provider-specific instructions from drifting while retaining each tool's native discovery and validation rules.
 
 **Result:** Future skills can support both model families from one implementation, and `just agents` or the complete CI gate catches incomplete registration before merge.
 

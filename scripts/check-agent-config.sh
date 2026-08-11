@@ -33,10 +33,23 @@ for skill_directory in .agents/skills/*; do
   if [ ! -f "$skill_directory/SKILL.md" ]; then
     fail "$skill_directory must contain SKILL.md"
   fi
-  if [ ! -L "$claude_skill" ]; then
-    fail "$claude_skill must be a symlink to ../../$skill_directory"
-  elif [ "$(readlink "$claude_skill")" != "../../$skill_directory" ]; then
-    fail "$claude_skill must use the relative target ../../$skill_directory"
+
+  if [ -L "$claude_skill" ]; then
+    if [ "$(readlink "$claude_skill")" != "../../$skill_directory" ]; then
+      fail "$claude_skill must use the relative target ../../$skill_directory"
+    fi
+  elif [ -d "$claude_skill" ]; then
+    adapter="$claude_skill/SKILL.md"
+    canonical_reference="../../../$skill_directory/SKILL.md"
+    if [ ! -f "$adapter" ]; then
+      fail "$claude_skill must contain a SKILL.md adapter"
+    elif ! grep -Fq "  canonical-skill: \"$canonical_reference\"" "$adapter"; then
+      fail "$adapter must declare metadata.canonical-skill as $canonical_reference"
+    elif ! grep -Fq "\`$canonical_reference\`" "$adapter"; then
+      fail "$adapter must tell Claude Code to load $canonical_reference"
+    fi
+  else
+    fail "$claude_skill must be a canonical symlink or a host-specific adapter"
   fi
 done
 
@@ -45,8 +58,8 @@ for claude_skill in .claude/skills/*; do
   skill_name="$(basename "$claude_skill")"
   canonical_skill=".agents/skills/$skill_name"
 
-  if [ ! -L "$claude_skill" ]; then
-    fail "$claude_skill must be a symlink, not a copied skill"
+  if [ ! -L "$claude_skill" ] && [ ! -d "$claude_skill" ]; then
+    fail "$claude_skill must be a canonical symlink or a host-specific adapter"
   fi
   if [ ! -d "$canonical_skill" ]; then
     fail "$claude_skill has no canonical directory at $canonical_skill"
