@@ -34,6 +34,19 @@ for skill_directory in .agents/skills/*; do
     fail "$skill_directory must contain SKILL.md"
   fi
 
+  claude_manual=false
+  codex_manual=false
+  if grep -Eq '^disable-model-invocation:[[:space:]]*true[[:space:]]*$' "$skill_directory/SKILL.md"; then
+    claude_manual=true
+  fi
+  openai_metadata="$skill_directory/agents/openai.yaml"
+  if [ -f "$openai_metadata" ] && grep -Eq '^[[:space:]]*allow_implicit_invocation:[[:space:]]*false[[:space:]]*$' "$openai_metadata"; then
+    codex_manual=true
+  fi
+  if [ "$claude_manual" != "$codex_manual" ]; then
+    fail "$skill_directory must configure equivalent manual-only invocation for Claude Code and Codex"
+  fi
+
   if [ -L "$claude_skill" ]; then
     if [ "$(readlink "$claude_skill")" != "../../$skill_directory" ]; then
       fail "$claude_skill must use the relative target ../../$skill_directory"

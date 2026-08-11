@@ -1,102 +1,76 @@
 ---
 name: to-gh-issues
-description: Break a plan, specification, or the current conversation into dependency-aware issues and publish them as one local file per issue or as GitHub issues with native blocking links when available.
+description: Break a plan, spec, or the current conversation into a set of issues, each declaring its blocking edges, published to GitHub - edges as text in one file per issue locally, or native blocking links on GitHub.
+disable-model-invocation: true
 ---
 
 # To Issues
 
-Break a plan, specification, or conversation into thin vertical issue slices.
-Make each issue declare the issues that block it.
+Break a plan, spec, or conversation into a set of **issues** - thin vertical slices, each declaring the issues that **block** it.
 
 ## Process
 
 ### 1. Gather context
 
-Work from the context already available in the conversation.
-If the user supplies a specification path, plan, todo, issue number, URL, or other reference, fetch it and read its full body and comments.
+Work from whatever is already in the conversation context. If the user passes a reference (a spec path, a plan, a todo, an issue number, or URL) as an argument, fetch it and read its full body and comments.
 
-### 2. Explore the codebase when useful
+### 2. Explore the codebase (optional)
 
-If the codebase has not already been explored, inspect it enough to understand its current state.
-Use the project's domain glossary in issue titles and descriptions, and respect relevant architecture decision records.
+If you have not already explored the codebase, do so to understand the current state of the code. Issue titles and descriptions should use the project's domain glossary vocabulary, and respect ADRs in the area you're touching.
 
-Look for opportunities to prefactor the code to make implementation easier.
-Make the change easy, then make the easy change.
+Look for opportunities to prefactor the code to make the implementation easier. "Make the change easy, then make the easy change."
 
 ### 3. Draft vertical slices
 
-Break the work into indivisible and irreducible thin vertical issue slices.
+Break the work into **indivisible and irreducible** thin vertical issue slices.
 
-Apply these vertical-slice rules:
+- Each slice cuts a narrow but COMPLETE path through every layer (schema, API, UI, tests) - vertical, NOT a horizontal slice of one layer
+- A completed slice is demoable or verifiable on its own
+- Any prefactoring should be done first
 
-- Make each slice a narrow but complete path through every affected layer, such as schema, API, UI, and tests.
-- Do not create horizontal slices that cover only one layer.
-- Ensure each completed slice is demoable or independently verifiable.
-- Sequence necessary prefactoring before the behavior it enables.
+Give each issue its **blocking edges** - the other issues that must complete before it can start. An issue with no blockers can start immediately.
 
-Give each issue its blocking edges: the other issues that must complete before it can start.
-An issue with no blockers can start immediately.
-
-Treat wide refactors as the exception to vertical slicing.
-A wide refactor is one mechanical change, such as renaming a column or retyping a shared symbol, whose blast radius fans across the codebase so one edit breaks too many call sites for any vertical slice to land green.
-Do not force it into one indivisible issue.
-Sequence it as expand-contract:
-
-1. Expand by adding the new form beside the old form without breaking callers.
-2. Migrate callers in batches sized by blast radius, with each batch in its own issue blocked by the expansion issue.
-3. Contract by deleting the old form in an issue blocked by every migration batch.
-
-Keep CI green after every batch.
-If even the migration batches cannot stay green alone, retain the sequence on an integration branch and make every batch block a final integrate-and-verify issue where green is restored.
+**Wide refactors are the exception to vertical slicing.** A **wide refactor** is one mechanical change - rename a column, retype a shared symbol - whose **blast radius** fans across the whole codebase, so a single edit breaks thousands of call sites at once and no vertical slice can land green. Don't force it into an indivisible and irreducible issue; sequence it as **expand–contract**. First expand: add the new form beside the old so nothing breaks. Then migrate the call sites over in batches sized by blast radius (per package, per directory), each batch its own issue blocked by the expand, keeping CI green batch to batch because the old form still exists. Finally contract: delete the old form once no caller remains, in a issue blocked by every migrate batch. When even the batches can't stay green alone, keep the sequence but let them share an integration branch that all block a final integrate-and-verify issue - green is promised only there.
 
 ### 4. Quiz the user
 
-Present the proposed breakdown as a numbered list.
-For each issue, show:
+Present the proposed breakdown as a numbered list. For each issue, show:
 
-- **Title**: A short, descriptive name.
-- **Labels**: The applicable GitHub labels.
-- **Blocked by**: The other proposed issues that genuinely gate it, or none.
-- **What it delivers**: The end-to-end behavior this issue makes work.
+- **Title**: short descriptive name
+- **Labels**: the associated GitHub labels
+- **Blocked by**: which other issues (if any) must complete first
+- **What it delivers**: the end-to-end behaviour this issue makes work
 
 Ask the user:
 
-- Does the granularity feel right, or is it too coarse or too fine?
-- Are the blocking edges correct?
+- Does the granularity feel right? (too coarse / too fine)
+- Are the blocking edges correct - does each issue only depend on issues that genuinely gate it?
 - Should any issues be merged or split further?
-- Is each issue labeled correctly?
-- Should the approved issues be written locally or published to GitHub?
+- Is the issue labelled correctly?
 
-Iterate until the user approves the breakdown and publication destination.
+Iterate until the user approves the breakdown.
 
-### 5. Generate a diagram only when supported and useful
+### 5. Generate Diagram
 
-If, and only if, an Excalidraw or Mermaid diagram-generation skill is available, optionally create a diagram when it materially clarifies architecture, dependencies, or solution direction.
+If, and only if, a `excalidraw skill` or `mermaid skill` for diagram generation is available to you, optionally, create a diagram that supports explanation of the issue or supports a direction for a solution. An example could be when an issue is related to the architecture where a visual can support
 
-### 6. Publish the issues
+### 6. Publish the issues to GitHub
 
-Publish only the approved issues to the approved destination.
+Publish the approved issues.
 
-- **Local files**: Write one file per issue under `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` in dependency order with blockers first.
-  Use the local issue template below.
-  List each blocking issue by its local number and title.
-  Never combine multiple issues into one file.
-- **GitHub**: Publish issues in dependency order with blockers first so every blocking edge can reference a real issue identifier.
-  Use native blocking or sub-issue relationships when GitHub and the available tooling support them.
-  Otherwise, list the blocking issues in the `Blocked by` section.
-  Apply relevant existing labels.
+- **Local files** → write one file per issue under `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` in dependency order (blockers first). Each file's "Blocked by" lists the numbers/titles it depends on. Use the per-issue file template below - one issue per file, never a single combined file.
+- **GitHub** → publish one issue in dependency order (blockers first) so each issue's blocking edges can reference real identifiers. Use the platform's native blocking / sub-issue relationship where it has one; otherwise set each issue's "Blocked by" to the blocking issues. Apply relevant labels to the issue.
 
-Work the frontier: any issue whose blockers are all complete.
-For a purely linear chain, this means working from top to bottom.
+Work the **frontier**: any issue whose blockers are all done. For a purely linear chain that means top to bottom.
 
-Do not close a source or parent issue, and do not edit its title, body, labels, or status.
+Do NOT close or modify any parent issue.
 
 ```markdown
 # <NN> - <Issue title>
 
-**What to build:** Describe the end-to-end behavior this issue makes work from the user's perspective, not a layer-by-layer implementation list.
+**What to build:** the end-to-end behaviour this issue makes work, from the user's perspective - not a layer-by-layer implementation list.
 
-**Blocked by:** List the numbers and titles of the issues that gate this one, or "None - can start immediately."
+**Blocked by:** the numbers/titles of the issues that gate this one, or "None - can start immediately".
 
 **Status:** ready
 
@@ -104,31 +78,26 @@ Do not close a source or parent issue, and do not edit its title, body, labels, 
 - [ ] Acceptance criterion 2
 ```
 
-Use an existing GitHub issue template when one applies.
-Otherwise, use this template:
+Use the existing GitHub Issue Templates where applicable else default to creating a blank issue with the following as a template:
 
 ```markdown
 ## Parent
 
-Reference the source issue when the source was an existing GitHub issue.
-Otherwise, omit this section.
+A reference to the parent issue on GitHub (if the source was an existing issue, otherwise omit this section).
 
 ## What & Why
 
-Explain why the issue exists and what problem it solves for the user.
-Describe the end-to-end behavior this issue makes work, not a layer-by-layer implementation list.
+Why it exists, and what problem it solves for the user. The end-to-end behaviour this issue makes work, from the user's perspective - not layer-by-layer implementation.
 
 ## Rough code/textual sketch of an approach (optional)
 
-Give a rough starting point in pseudocode, including where the work belongs, its shape, and an important gotcha.
-Leave this section blank when unsure.
+A rough starting point defined using pseudo code - where it'd live, the shape of it, a gotcha to watch. Leave blank if unsure.
 
 ## Mockup, diagram, or screenshot (optional)
 
-Include a rough interface sketch, flow diagram, architecture diagram, or screenshot when it communicates the decision better than prose.
-Leave this section blank when unsure.
+Drag files straight into this box. A rough sketch of the interface, a flow diagram, an architecture diagram, or a shot of how another tool solves it says more than a paragraph. Leave blank if unsure.
 
-![Alt text](image_url)
+- ![Alt text](image_url)
 
 ## Acceptance criteria
 
@@ -137,8 +106,7 @@ Leave this section blank when unsure.
 
 ## Blocked by
 
-- Reference each blocking issue, or write "None - can start immediately."
+- A reference to each blocking issue, or "None - can start immediately".
 ```
 
-In either form, avoid specific file paths and code snippets because they become stale quickly.
-Exception: if a prototype produced a snippet that captures a decision more precisely than prose, inline only the decision-rich portion and state briefly that it came from a prototype.
+In either form, avoid specific file paths or code snippets - they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it and note briefly that it came from a prototype. Trim to the decision-rich parts - not a working demo, just the important bits.

@@ -13,6 +13,18 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-11 - Pair host policies in one shared skill directory
+
+**What:** Prefer one canonical skill directory plus a Claude Code discovery symlink, even when the skill needs manual-only invocation.
+Put Claude Code's `disable-model-invocation: true` in the shared `SKILL.md` and Codex's equivalent `policy.allow_implicit_invocation: false` in `agents/openai.yaml`.
+Reserve adapters for cases where a supported host cannot load the shared source correctly.
+
+**Why:** Codex tolerates the Claude-specific frontmatter extension while reading its own policy sidecar, and Claude Code ignores the Codex sidecar.
+Keeping both policies beside one instruction body preserves equivalent behavior without an adapter or duplicated Markdown.
+
+**Result:** The `to-gh-issues` skill is one directory discovered by both harnesses, and `just agents` rejects mismatched manual-invocation policies.
+This supersedes the adapter preference in the earlier decision below while retaining that entry as historical context.
+
 ## 2026-08-11 - Share one skill source across Codex and Claude Code
 
 **What:** Store project skills canonically under `.agents/skills/`, normally link each skill directory into `.claude/skills/`, and link `CLAUDE.md` to `AGENTS.md`.
