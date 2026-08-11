@@ -14,6 +14,14 @@ Always run `just ci` before claiming generated-project work is done. When the
 working tree is the template source, run `just template-ci` instead; it creates
 a disposable initialized copy and runs `just ci` plus the hook checks there.
 
+## Agent skills
+
+Keep project skills in `.agents/skills/<skill-name>/` as the canonical source.
+For Claude Code discovery, add a relative directory symlink at
+`.claude/skills/<skill-name>` pointing to the canonical skill directory.
+Do not copy skill files between the two locations because copies can drift.
+Run `just agents` after adding, removing, or renaming a skill.
+
 ## Conventions
 
 - **Ruff is the Python style authority.** shfmt owns shell formatting and
@@ -64,6 +72,8 @@ a disposable initialized copy and runs `just ci` plus the hook checks there.
 
 | Path | What |
 |---|---|
+| `.agents/skills/` | Canonical project skills shared by supported agents. |
+| `.claude/skills/` | Claude Code discovery links to canonical project skills. |
 | `docs/decisions.md` | Lightweight decision log. Add ~10 lines for any non-obvious call. |
 | `docs/adr/` | Architecture decision records, for decisions that reshape the system. |
 

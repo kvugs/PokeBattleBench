@@ -13,6 +13,16 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-11 - Share one skill source across Codex and Claude Code
+
+**What:** Store project skills canonically under `.agents/skills/`, link each skill directory into `.claude/skills/`, and link `CLAUDE.md` to `AGENTS.md`.
+A required local check verifies the instruction link and rejects missing, stale, or copied Claude skill entries.
+
+**Why:** Codex and Claude Code discover repository skills from different directories, but both support directory symlinks and the same `SKILL.md` core format.
+Keeping one real copy prevents provider-specific instructions from drifting while retaining each tool's native discovery path.
+
+**Result:** Future skills can support both model families from one implementation, and `just agents` or the complete CI gate catches incomplete registration before merge.
+
 ## 2026-08-09 - Test the oldest supported uv release in required CI
 
 **What:** Support `uv >=0.11.31,<0.13` and add a required `uv-lower-bound` job that runs the complete local CI gate with exactly `uv 0.11.31`.
