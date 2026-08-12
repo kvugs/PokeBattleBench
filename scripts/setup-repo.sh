@@ -42,6 +42,9 @@ label "time:days" "fbca04" "Expected to take one to several focused days"
 # sub-issues. .github/workflows/issue-hygiene.yml keeps this label and the ☂️
 # title prefix in step, so either one finds every umbrella.
 label "umbrella" "c2e0c6" "Goal tracked as a checklist of atomic sub-issues"
+# Resolution label. GitHub's standard white keeps it visually neutral, and
+# .github/release.yml excludes declined work from generated release notes.
+label "wontfix" "ffffff" "This will not be worked on"
 # Dependabot + release-notes buckets.
 label "dependencies" "0366d6" "Dependency bump"
 label "ci" "ededed" "CI / tooling"
@@ -49,8 +52,7 @@ label "ci" "ededed" "CI / tooling"
 # Remove default labels and process labels from earlier template versions (no-op
 # if absent). `task` retired because every unit of work is already a bug, a
 # feature, or a docs change, and a third catch-all bucket only invited debate
-# about which one applied. `duplicate`, `invalid`, and `wontfix` stay because
-# release notes exclude them.
+# about which one applied. `wontfix` is intentionally provisioned above.
 for stale in \
   "good first issue" \
   "help wanted" \
@@ -58,7 +60,6 @@ for stale in \
   "duplicate" \
   "enhancement" \
   "question" \
-  "wontfix" \
   "invalid"; do
   if gh label delete "$stale" --repo "$REPO" --yes >/dev/null 2>&1; then
     echo "  removed: $stale"
