@@ -13,7 +13,7 @@ name: Informational
 on:
   pull_request:
   push:
-    branches: [main, dev]
+    branches: [main]
   schedule:
     # 04:45 UTC. Off the hour on purpose - GitHub queues every `0 * * * *` cron
     # at the same moment and delays the overflow. Two things about scheduled

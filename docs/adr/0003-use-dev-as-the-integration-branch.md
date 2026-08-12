@@ -1,6 +1,6 @@
 # 0003 - Use `dev` as the persistent integration branch
 
-- **Status:** Accepted
+- **Status:** Superseded by [0004](0004-use-main-as-the-single-shared-branch.md)
 - **Date:** 2026-08-09
 - **Deciders:** PokeBattleBench collaborators
 

@@ -36,7 +36,6 @@ run `just template-ci`; it materializes and verifies a disposable copy.
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - how to set up and open PRs.
 - **[AGENTS.md](AGENTS.md)** - rules written by humans for AI coding agents.
 - **[SECURITY.md](SECURITY.md)** - how to report a vulnerability privately.
-- **[docs/development-workflow.md](docs/development-workflow.md)** - how feature, release, hotfix, and dependency PRs move between branches.
 - **[docs/project-direction.md](docs/project-direction.md)** - the agreed learning direction and MVP scope.
 - **[docs/decisions.md](docs/decisions.md)** - the lightweight decision log.
 - **[docs/adr/](docs/adr/)** - architecture decision records (the heavier, numbered decisions).
