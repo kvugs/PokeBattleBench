@@ -135,7 +135,7 @@ repos:
 
   # --- Spelling. Rust-fast, very low false-positive rate. Tune in _typos.toml. ---
   - repo: https://github.com/crate-ci/typos
-    rev: v1.48.0
+    rev: v1.49.0
     hooks:
       - id: typos
         # Upstream writes fixes by default. Required gates report only.
