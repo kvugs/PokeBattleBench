@@ -49,9 +49,9 @@ packages = ["src/pokebattlebench"]
 # deliberately, update the lock-index allowlist and CI together.
 # -----------------------------------------------------------------------------
 [tool.uv]
-# Keep local uv behavior within the range exercised by this template. CI pins
-# one version inside the range; widening it is a deliberate compatibility call.
-required-version = ">=0.11.31,<0.13"
+# Keep local uv behavior at or above the oldest known-compatible release.
+# CI pins one version for reproducibility without imposing an unproven ceiling.
+required-version = ">=0.11.31"
 
 # Runtime requirements describe library compatibility; uv.lock records the exact
 # environment tested here. `just add-dev` overrides this to exact for tools whose

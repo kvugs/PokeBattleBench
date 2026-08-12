@@ -13,6 +13,17 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-12 - Treat the uv version as a minimum compatibility claim
+
+**What:** Require `uv >=0.11.31` without an upper bound and remove the dedicated lower-bound CI job.
+Keep normal CI pinned to `uv 0.12.0` so required runs remain reproducible.
+
+**Why:** Version `0.11.31` is the oldest release proven to work, but no known incompatibility justifies rejecting future uv releases.
+Continuously duplicating the full CI gate at the minimum version adds a required check without protecting against an observed failure mode.
+
+**Result:** Contributors and Dependabot may use any uv release at or above the known minimum, while CI continues to test one deterministic tool version.
+This supersedes the bounded range and required lower-bound test chosen on 2026-08-09 while preserving that entry as history.
+
 ## 2026-08-11 - Pair host policies in one shared skill directory
 
 **What:** Prefer one canonical skill directory plus a Claude Code discovery symlink, even when the skill needs manual-only invocation.

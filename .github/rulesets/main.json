@@ -32,8 +32,7 @@
           { "context": "lint" },
           { "context": "types" },
           { "context": "test-fast" },
-          { "context": "package" },
-          { "context": "uv-lower-bound" }
+          { "context": "package" }
         ]
       }
     }
