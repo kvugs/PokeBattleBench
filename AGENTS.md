@@ -61,8 +61,6 @@ a disposable initialized copy and runs `just ci` plus the hook checks there.
 
 | Path | What |
 |---|---|
-| `.agents/skills/` | Canonical project skills shared by supported agents. |
-| `.claude/skills/` | Claude Code discovery links to canonical project skills. |
 | `docs/decisions.md` | Lightweight decision log. Add ~10 lines for any non-obvious call. |
 | `docs/adr/` | Architecture decision records, for decisions that reshape the system. |
 
