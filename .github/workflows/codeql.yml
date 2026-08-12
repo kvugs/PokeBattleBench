@@ -9,7 +9,7 @@ on:
   pull_request:
     paths: ["**/*.py", ".github/workflows/codeql.yml"]
   push:
-    branches: [main, dev]
+    branches: [main]
     paths: ["**/*.py", ".github/workflows/codeql.yml"]
   schedule:
     - cron: "45 12 * * 5" # Fridays, 12:45 UTC

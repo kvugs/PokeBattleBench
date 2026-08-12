@@ -30,4 +30,5 @@ Anything lighter - a tool choice, a convention, a small tradeoff - goes in
 |---|---|---|
 | 0001 | [Use a local Pokémon Showdown server for MVP battles](0001-use-a-local-pokemon-showdown-server.md) | Accepted |
 | 0002 | [Build the agent client library before adopting `poke-env`](0002-build-the-agent-client-library.md) | Accepted |
-| 0003 | [Use `dev` as the persistent integration branch](0003-use-dev-as-the-integration-branch.md) | Accepted |
+| 0003 | [Use `dev` as the persistent integration branch](0003-use-dev-as-the-integration-branch.md) | Superseded by 0004 |
+| 0004 | [Use `main` as the single shared branch](0004-use-main-as-the-single-shared-branch.md) | Accepted |

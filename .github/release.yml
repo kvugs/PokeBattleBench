@@ -3,7 +3,7 @@
 # writes itself from the labels the project already applies.
 #
 # This is why there is no hand-maintained CHANGELOG.md: a file humans edit
-# drifts, and the merged PR history plus labels already holds the truth.
+# drifts, and a squash-merged history plus labels already holds the truth.
 changelog:
   exclude:
     labels:
