@@ -70,6 +70,7 @@ hooks: _ready
 # makes this advisory; informational CI runs the same hook on PRs and nightly.
 # Check external links in Markdown (advisory; requires network)
 links: _ready
+    ./scripts/setup-lychee.sh >/dev/null
     {{ UV }} pre-commit run lychee --hook-stage manual --all-files
 
 # When: before pushing, usually via `just ci`. Reports only, never writes - run
@@ -172,6 +173,6 @@ template-ci:
 # you still need first.
 # Delete caches and build artifacts. Does not touch .venv or uv.lock.
 clean:
-    rm -rf .pytest_cache .ruff_cache .mypy_cache htmlcov \
+    rm -rf .cache .pytest_cache .ruff_cache .mypy_cache htmlcov \
       .coverage .coverage.* coverage.xml coverage.txt dist build
     find . -type d -name __pycache__ -prune -exec rm -rf {} +

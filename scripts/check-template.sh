@@ -19,6 +19,7 @@ trap 'rm -rf "$TMP_ROOT"' EXIT
   COPYFILE_DISABLE=1 tar \
     --exclude='./.git' \
     --exclude='./.venv' \
+    --exclude='./.cache' \
     --exclude='./.DS_Store' \
     --exclude='./.pytest_cache' \
     --exclude='./.ruff_cache' \
