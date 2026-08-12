@@ -1,0 +1,7 @@
+interface:
+  display_name: "To GitHub Issues"
+  short_description: "Turn plans into dependency-aware GitHub issues"
+  default_prompt: "Use $to-gh-issues to turn this plan into dependency-aware GitHub issues."
+
+policy:
+  allow_implicit_invocation: false
