@@ -52,9 +52,9 @@ Ask the user:
 
 Iterate until the user approves the breakdown.
 
-### 5. Generate Diagram
+### 5. Generate Diagram (optional)
 
-If, and only if, a `excalidraw skill` or `mermaid skill` for diagram generation is available to you, optionally, create a diagram that supports explanation of the issue or supports a direction for a solution. An example could be when an issue is related to the architecture where a visual can support
+If, and only if, a `excalidraw skill` or `mermaid skill` for diagram generation is available to you, optionally, create a diagram that supports explanation of the issue or supports a direction for a solution. An example could be when an issue is related to the architecture where a visual can support understanding and framing of the issue and scope.
 
 ### 6. Publish the issues to GitHub
 
@@ -67,26 +67,9 @@ Work the **frontier**: any issue whose blockers are all done. For a purely linea
 
 Do NOT close or modify any parent issue.
 
-#### Local issue template
-
-```markdown
-
-# <NN> - <Issue title>
-
-**What to build:** the end-to-end behaviour this issue makes work, from the user's perspective - not a layer-by-layer implementation list.
-
-**Blocked by:** the numbers/titles of the issues that gate this one, or "None - can start immediately".
-
-**Status:** ready
-
-- [ ] Acceptance criterion 1
-- [ ] Acceptance criterion 2
-
-```
+#### Issue template
 
 Use the existing GitHub Issue Templates where applicable else default to creating a blank issue with the following as a template:
-
-#### GitHub issue template
 
 ```markdown
 
@@ -102,9 +85,9 @@ Why it exists, and what problem it solves for the user. The end-to-end behaviour
 
 A rough starting point defined using pseudo code - where it'd live, the shape of it, a gotcha to watch. Leave blank if unsure.
 
-## Mockup, diagram, or screenshot (optional)
+## Mockup or diagram (optional)
 
-Drag files straight into this box. A rough sketch of the interface, a flow diagram, an architecture diagram, or a shot of how another tool solves it says more than a paragraph. Leave blank if unsure.
+Insert files straight into this box. A rough sketch of the interface, a flow diagram, an architecture diagram, or a shot of how another tool solves it says more than a paragraph. Leave blank if unsure.
 
 - ![Alt text](image_url)
 
