@@ -124,7 +124,7 @@ package: _ready
 audit: _ready
     uv audit --locked --preview-features audit-command
 
-# When: before you push or open a PR, after updating from dev, and when
+# When: before you push or open a PR, after updating from main, and when
 # CI is red and you want it reproduced locally. These are the four primary
 # generated-project jobs in ci.yml; CI also repeats this combined gate with the
 # supported uv lower bound, and template source runs `just template-ci`.

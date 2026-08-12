@@ -40,6 +40,7 @@ node_modules/
 
 # Agent tooling - shared settings may be committed; per-machine ones are not
 .claude/settings.local.json
+.scratch/
 
 # OS / editor
 .DS_Store

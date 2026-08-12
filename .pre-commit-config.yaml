@@ -86,8 +86,8 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
       - id: check-ast
-      - id: no-commit-to-branch # Shared branches are PR-only; mirrors rulesets
-        args: [--branch, main, --branch, dev]
+      - id: no-commit-to-branch # `main` is PR-only; mirrors branch protection
+        args: [--branch, main]
 
   # --- CI config correctness. A typo in a workflow is otherwise only found by
   #     pushing it. actionlint also shellchecks `run:` blocks. ---
@@ -159,8 +159,8 @@ repos:
         files: \.md$
         stages: [manual]
 
-  # --- Commit messages. The PR title becomes the squash commit on dev and is
-  #     retained when dev is promoted to main, so use the same shape for both. ---
+  # --- Commit messages. The PR title becomes the squash commit on main, so use
+  #     the same Conventional Commit shape for both. ---
   - repo: local
     hooks:
       - id: commitizen

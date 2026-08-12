@@ -13,6 +13,30 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-11 - Pair host policies in one shared skill directory
+
+**What:** Prefer one canonical skill directory plus a Claude Code discovery symlink, even when the skill needs manual-only invocation.
+Put Claude Code's `disable-model-invocation: true` in the shared `SKILL.md` and Codex's equivalent `policy.allow_implicit_invocation: false` in `agents/openai.yaml`.
+Reserve adapters for cases where a supported host cannot load the shared source correctly.
+
+**Why:** Codex tolerates the Claude-specific frontmatter extension while reading its own policy sidecar, and Claude Code ignores the Codex sidecar.
+Keeping both policies beside one instruction body preserves equivalent behavior without an adapter or duplicated Markdown.
+
+**Result:** The `to-gh-issues` skill is one directory discovered by both harnesses.
+This supersedes the adapter preference in the earlier decision below while retaining that entry as historical context.
+
+## 2026-08-11 - Share one skill source across Codex and Claude Code
+
+**What:** Store project skills canonically under `.agents/skills/`, normally link each skill directory into `.claude/skills/`, and link `CLAUDE.md` to `AGENTS.md`.
+When a skill needs Claude-only frontmatter, use a minimal Claude adapter that declares and loads the canonical skill instead of copying its instructions.
+A required local check verifies instruction links, adapters, and canonical targets.
+
+**Why:** Codex and Claude Code discover repository skills from different directories, but both support directory symlinks and the same `SKILL.md` core format.
+Their invocation-control fields differ, so a symlink cannot represent every valid shared skill without one host rejecting the other's frontmatter.
+Keeping one authoritative body plus a small adapter prevents provider-specific instructions from drifting while retaining each tool's native discovery and validation rules.
+
+**Result:** Future skills can support both model families from one implementation.
+
 ## 2026-08-09 - Test the oldest supported uv release in required CI
 
 **What:** Support `uv >=0.11.31,<0.13` and add a required `uv-lower-bound` job that runs the complete local CI gate with exactly `uv 0.11.31`.

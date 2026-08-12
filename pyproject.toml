@@ -73,7 +73,7 @@ default = true
 
 # -----------------------------------------------------------------------------
 # Commitizen - local commits and PR titles use Conventional Commits. GitHub uses
-# the PR title as the squash commit on dev, so promoted history remains legible.
+# the PR title as the squash commit on main, so merged history remains legible.
 # -----------------------------------------------------------------------------
 [tool.commitizen]
 name = "cz_conventional_commits"

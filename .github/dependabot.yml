@@ -10,7 +10,6 @@ version: 2
 updates:
   - package-ecosystem: uv
     directory: "/"
-    target-branch: dev
     schedule:
       interval: weekly
       day: friday
@@ -32,7 +31,6 @@ updates:
 
   - package-ecosystem: github-actions
     directory: "/"
-    target-branch: dev
     schedule:
       interval: weekly
       day: friday
@@ -49,7 +47,6 @@ updates:
   # remember `pre-commit autoupdate`.
   - package-ecosystem: pre-commit
     directory: "/"
-    target-branch: dev
     schedule:
       interval: weekly
       day: friday
