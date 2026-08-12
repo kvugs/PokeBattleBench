@@ -167,9 +167,9 @@ dependencies.
 versions allowed by project policy, and writes the resolved direct versions
 back to `pyproject.toml`; it restores both files if resolution fails. Remote
 pre-commit revisions update through Dependabot rather than `autoupdate`, which
-can select mutable aliases such as `v1` or `nightly`. Lychee is the exception:
-its `lychee-vX.Y.Z` tags currently crash Dependabot's pre-commit version parser,
-so update that immutable revision manually until the parser supports it.
+can select mutable aliases such as `v1` or `nightly`.
+Lychee is pinned with official release checksums in `scripts/setup-lychee.sh`.
+Update its version and platform checksums together from the official release assets.
 Dependabot sends scheduled version updates to `main` and auto-merges only eligible development-tool minor or patch updates after required CI passes.
 Dependabot security updates also target `main`.
 Runtime dependencies, Actions, pre-commit hooks, and major updates remain human-reviewed because SemVer does not make behavior changes risk-free.

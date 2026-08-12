@@ -13,6 +13,17 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-12 - Bootstrap Lychee directly from verified release binaries
+
+**What:** Replace Lychee's remote pre-commit environment with a local hook backed by `scripts/setup-lychee.sh`.
+Download the pinned official binary with bounded retries, verify its release checksum, and cache it per version and platform.
+
+**Why:** The upstream hook first downloads `cargo-binstall`, then asks it to download Lychee, so either service can fail before links are checked.
+Its source-build fallback is also incompatible with the install path pre-commit requests.
+
+**Result:** Local and CI link checks share one deterministic bootstrap, repeated checks reuse the verified binary, and CI reports bootstrap and link failures in separate steps.
+This supersedes the manual remote-hook pin recorded on 2026-07-30 while preserving that entry as history.
+
 ## 2026-08-12 - Treat the uv version as a minimum compatibility claim
 
 **What:** Require `uv >=0.11.31` without an upper bound and remove the dedicated lower-bound CI job.

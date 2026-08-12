@@ -110,6 +110,13 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-python-env
+      - name: Restore verified Lychee binary
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/lychee
+          key: lychee-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/setup-lychee.sh') }}
+      - name: Bootstrap Lychee
+        run: scripts/setup-lychee.sh >/dev/null
       - name: Check external links in Markdown
         run: uv run --locked pre-commit run lychee --hook-stage manual --all-files
 

@@ -10,10 +10,8 @@
 # Every hook must be classified in scripts/check-static.sh as CI-enforced or
 # intentionally local/manual. scripts/check-hook-coverage.py rejects omissions.
 #
-# Dependabot's pre-commit ecosystem keeps remote revisions current except for
-# Lychee, whose prefixed release tags currently crash Dependabot's parser. Keep
-# its immutable `lychee-vX.Y.Z` revision current manually. Review every update:
-# upstream mutable aliases such as `v1` or `nightly` are not acceptable.
+# Dependabot's pre-commit ecosystem keeps remote revisions current. Lychee is a
+# local hook because scripts/setup-lychee.sh owns its pinned binary bootstrap.
 minimum_pre_commit_version: "4.0.0"
 default_install_hook_types: [pre-commit, commit-msg]
 fail_fast: false
@@ -152,10 +150,12 @@ repos:
 
   # --- External links. Manual/advisory because remote availability is not a
   #     property of the commit; informational.yml runs it on PRs and nightly. ---
-  - repo: https://github.com/lycheeverse/lychee
-    rev: lychee-v0.24.2
+  - repo: local
     hooks:
       - id: lychee
+        name: lychee (external links)
+        entry: scripts/check-links.sh
+        language: script
         files: \.md$
         stages: [manual]
 
