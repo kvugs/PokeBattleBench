@@ -126,8 +126,7 @@ audit: _ready
 
 # When: before you push or open a PR, after updating from main, and when
 # CI is red and you want it reproduced locally. These are the four primary
-# generated-project jobs in ci.yml; CI also repeats this combined gate with the
-# supported uv lower bound, and template source runs `just template-ci`.
+# generated-project jobs in ci.yml; template source runs `just template-ci`.
 ci: lint types test package
 
 # Usage:  just add httpx        just add-dev pytest-asyncio
