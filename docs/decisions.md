@@ -13,6 +13,19 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-16 - Run Showdown as a pinned, disposable local service
+
+**What:** Build Pokémon Showdown from a reviewed full commit SHA on a digest-pinned Node image, and expose the selected revision through an image label.
+Limit the Docker context with a default-deny allowlist, run as the unprivileged Node user, and publish port 8000 only on host loopback.
+Use tokenless local identities with ordinary abuse checks, disable privileged runtime control paths and filesystem writes, and run the single-battle MVP without child workers.
+
+**Why:** Contributors need the same protocol and simulator behavior without maintaining manual clones or depending on public-server identity infrastructure.
+The MVP values a small, observable failure boundary over public-server administration, persistence, or worker scaling.
+Loopback publication is the security condition that makes tokenless development identities acceptable.
+
+**Result:** Rebuilding restores a known server state, an unexpected failure terminates clearly for the container supervisor, and no unrelated repository content enters the image build.
+Changing the upstream revision, host binding, persistence model, or worker topology requires a deliberate review of these assumptions.
+
 ## 2026-08-12 - Bootstrap Lychee directly from verified release binaries
 
 **What:** Replace Lychee's remote pre-commit environment with a local hook backed by `scripts/setup-lychee.sh`.

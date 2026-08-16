@@ -1,0 +1,34 @@
+# Local development service for the pinned Pokémon Showdown environment.
+# Durable state and public access are outside the autonomous-battle MVP.
+services:
+  showdown:
+    build:
+      # This directory owns a default-deny .dockerignore file, so unrelated
+      # repository content cannot enter the build context.
+      context: ./server/pokemon-showdown
+    # Run a tiny init as PID 1 to forward signals and reap Showdown workers.
+    init: true
+    # Showdown needs no Linux capabilities or permission escalation.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # Host loopback is the inbound security boundary. Keep this binding local,
+    # especially while config.js permits tokenless development identities.
+    ports:
+      - "127.0.0.1:8000:8000"
+    # This lightweight probe answers only "is the TCP listener ready?".
+    # Protocol and battle behavior belong in the live container test.
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - |
+          const socket = require("node:net").connect(8000, "127.0.0.1");
+          socket.once("connect", () => process.exit(0));
+          socket.once("error", () => process.exit(1));
+      interval: 2s
+      timeout: 1s
+      # Bound readiness to approximately 60 seconds without a fixed sleep.
+      retries: 30

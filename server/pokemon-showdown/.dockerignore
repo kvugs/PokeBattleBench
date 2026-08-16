@@ -1,0 +1,7 @@
+# Keep the image context limited to project-owned build inputs.
+# The Dockerfile fetches the pinned upstream source, so no repository files
+# outside this directory should be available to COPY instructions.
+*
+!Dockerfile
+!config.js
+!.dockerignore

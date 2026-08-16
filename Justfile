@@ -60,6 +60,56 @@ install: _ready
     uv sync --locked
     {{ UV }} pre-commit install
 
+# -----------------------------------------------------------------------------
+# LOCAL POKEMON SHOWDOWN - reproducible development server lifecycle.
+#
+# These commands require the Docker Compose plugin invoked as `docker compose`.
+# Startup waits for the Compose health check instead of using a fixed sleep.
+# -----------------------------------------------------------------------------
+
+[private]
+_showdown_ready:
+    @command -v docker >/dev/null 2>&1 || { echo "Docker is required; see CONTRIBUTING.md." >&2; exit 1; }
+    @docker info >/dev/null 2>&1 || { echo "The Docker daemon is not available; start your Docker environment." >&2; exit 1; }
+    @docker compose version >/dev/null 2>&1 || { echo "The Docker Compose plugin is required; see CONTRIBUTING.md." >&2; exit 1; }
+    @docker compose up --help | grep -q -- '--wait-timeout' || { echo "Docker Compose must support 'up --wait-timeout'; update the Compose plugin." >&2; exit 1; }
+
+# When: before first use, or after changing the Dockerfile, server config, or
+# pinned Showdown revision. A cold build requires internet access.
+# Build the local Pokemon Showdown image
+showdown-build: _showdown_ready
+    docker compose build showdown
+
+# When: starting local battle development. Builds changed inputs, starts in the
+# background, and returns only when healthy or after the 60-second timeout.
+# Start Pokemon Showdown and wait until it is healthy
+showdown-up: _showdown_ready
+    docker compose up --detach --build --wait --wait-timeout 60 showdown
+
+# When: checking whether the local service is running or healthy.
+# Show the Pokemon Showdown container status
+showdown-status: _showdown_ready
+    docker compose ps showdown
+
+# When: diagnosing startup, protocol, or battle failures. Ctrl+C stops following
+# output but leaves the service running.
+# Follow Pokemon Showdown logs
+showdown-logs: _showdown_ready
+    docker compose logs --follow showdown
+
+# When: finished with local battle work. Stops and removes project containers
+# and networks while retaining images and build cache.
+# Stop and remove the local Pokemon Showdown service
+showdown-down: _showdown_ready
+    docker compose down --remove-orphans
+
+# When: stale runtime state is suspected. Removes this Compose project's
+# containers, networks, and volumes before rebuilding and waiting for health.
+# Recreate Pokemon Showdown from fresh runtime state
+showdown-reset: _showdown_ready
+    docker compose down --volumes --remove-orphans
+    docker compose up --detach --build --wait --wait-timeout 60 showdown
+
 # When: after adding or changing a hook, or on a branch where you used
 # --no-verify. Manual external hooks are intentionally excluded.
 # Run the fast pre-commit gate on all files
