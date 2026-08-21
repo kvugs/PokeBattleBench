@@ -25,18 +25,18 @@ Issues = "https://github.com/kvugs/pokebattlebench/issues"
 # These are the only tools CI and pre-commit need.
 [dependency-groups]
 dev = [
-    "ruff==0.16.1",
-    "basedpyright==1.39.9",
+    "ruff==0.16.3",
+    "basedpyright==1.39.10",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
-    "pre-commit==4.6.1",
+    "pre-commit==4.6.2",
     "commitizen==4.17.0",
-    "hatchling==1.31.0",
+    "hatchling==1.32.0",
     "shellcheck-py==0.11.0.1",
 ]
 
 [build-system]
-requires = ["hatchling==1.31.0"]
+requires = ["hatchling==1.32.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
