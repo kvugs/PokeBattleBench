@@ -14,6 +14,10 @@ on:
   pull_request:
   push:
     branches: [main]
+  # The container check runs nightly, so there has to be a way to run it on
+  # demand: on a branch that touches the Dockerfile, waiting until 04:45 UTC
+  # for the answer is not a review cycle anyone will use.
+  workflow_dispatch:
   schedule:
     # 04:45 UTC. Off the hour on purpose - GitHub queues every `0 * * * *` cron
     # at the same moment and delays the overflow. Two things about scheduled
@@ -43,16 +47,109 @@ jobs:
       - uses: ./.github/actions/setup-python-env
       # Pytest exits 5 for an empty selection, which is legitimate before the
       # project has integration tests.
-      - name: pytest -m external
+      # `container` tests are excluded here and run in `showdown-container`
+      # below. They build a Docker image from source, which is minutes of work
+      # this job would otherwise spend on every pull request.
+      - name: pytest -m "external and not container"
         run: |
           set +e
-          uv run --locked pytest -m external
+          uv run --locked pytest -m "external and not container"
           code=$?
           if [ "$code" -eq 5 ]; then
-            echo "::notice::No tests are marked 'external' yet - nothing to run."
+            echo "::notice::No non-container 'external' tests to run."
             exit 0
           fi
           exit "$code"
+
+  showdown-container:
+    # Nightly and on demand only. A cold Showdown build is minutes of `npm ci`
+    # and TypeScript compilation, and these files change rarely, so putting it
+    # on every pull request would buy very little. A failure still reaches a
+    # human: `nightly-watchdog` opens a tracking issue for it.
+    name: showdown-container (${{ matrix.arch }})
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    strategy:
+      # One architecture failing must not hide the other's result, which is the
+      # whole reason both legs exist.
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            # Apple Silicon contributors run the linux/arm64 image inside
+            # Docker Desktop's VM, so this leg covers their architecture.
+            # Free on public repositories.
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write # Upload the image scan to the Security tab.
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-python-env
+      - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
+      # Pin both rather than inherit whatever the runner image ships:
+      # `build --check` needs Buildx 0.15+, and `up --wait-timeout` needs a
+      # recent Compose. `just showdown-check` asserts the latter and would
+      # otherwise fail for a reason no commit here caused.
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      - uses: docker/setup-compose-action@4eb059ff7f16592f9c84d5ca339c53cb7c5064e2 # v2.3.0
+
+      # BuildKit's own 21 build checks, run without producing an image. droast
+      # lints the same files statically in the required gate; this validates
+      # the build configuration BuildKit will actually execute.
+      - name: Validate the build configuration
+        run: docker compose build --check showdown
+
+      # Deliberately uncached. A cold build is the property under test, and a
+      # warm cache would hide exactly the breakage this job exists to catch.
+      - name: Build and exercise the container
+        run: just showdown-check
+
+      # The `trivy` job scans the filesystem, so it never sees the Node
+      # runtime, the Debian packages, or Showdown's npm tree - the bulk of what
+      # this image ships. One leg is enough: that package set does not differ
+      # between architectures, and scanning twice would double the noise.
+      #
+      # This reports rather than fails, and that is deliberate. Measured on the
+      # pinned revision, the image ships three fixed CRITICAL findings, from
+      # two different owners:
+      #
+      #   - websocket-driver (via sockjs) and esbuild are Showdown's own direct
+      #     dependencies, pinned by its lockfile. Neither can be fixed here
+      #     without moving SHOWDOWN_COMMIT, which is a reviewed decision.
+      #   - tar is not Showdown's at all. It is bundled inside the npm that
+      #     ships in the Node base image, so a base-image bump fixes it and
+      #     Dependabot now proposes those.
+      #
+      # Two of the three are therefore outside this repository's control, so a
+      # failing gate would be red from its first night, and a check left red
+      # stops being a signal. The SARIF upload puts the same information in the
+      # Security tab, to be triaged when the pinned revision is next reviewed.
+      - name: Scan the built image
+        if: matrix.arch == 'amd64'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: pokebattlebench/showdown:local
+          scanners: vuln,secret
+          # Unfixed findings cannot be acted on at all, so they are noise here.
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+          format: sarif
+          output: trivy-image.sarif
+          exit-code: "0"
+      - name: Upload image scan results
+        if: always() && matrix.arch == 'amd64'
+        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+        continue-on-error: true # SARIF upload needs a public repo or GHAS.
+        with:
+          sarif_file: trivy-image.sarif
+          category: trivy-image
 
   coverage:
     name: coverage
@@ -153,7 +250,7 @@ jobs:
   # exact failure this job exists to prevent.
   nightly-watchdog:
     name: nightly-watchdog
-    needs: [test-external, dependency-audit, links, trivy]
+    needs: [test-external, showdown-container, dependency-audit, links, trivy]
     # `always()` because the interesting case is a dependency that failed, and
     # the default `success()` would skip this job precisely then. Scheduled runs
     # only: on a pull request or a push the failure is already in front of an
@@ -172,6 +269,7 @@ jobs:
       ISSUE_TITLE: Nightly advisory checks are failing on main
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       RESULT_TEST_EXTERNAL: ${{ needs.test-external.result }}
+      RESULT_SHOWDOWN_CONTAINER: ${{ needs.showdown-container.result }}
       RESULT_DEPENDENCY_AUDIT: ${{ needs.dependency-audit.result }}
       RESULT_LINKS: ${{ needs.links.result }}
       RESULT_TRIVY: ${{ needs.trivy.result }}
@@ -195,6 +293,7 @@ jobs:
             esac
           }
           check test-external "$RESULT_TEST_EXTERNAL"
+          check showdown-container "$RESULT_SHOWDOWN_CONTAINER"
           check dependency-audit "$RESULT_DEPENDENCY_AUDIT"
           check links "$RESULT_LINKS"
           check trivy "$RESULT_TRIVY"

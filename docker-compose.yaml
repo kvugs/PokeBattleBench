@@ -2,6 +2,11 @@
 # Durable state and public access are outside the autonomous-battle MVP.
 services:
   showdown:
+    # Name the image rather than letting Compose derive one from the directory.
+    # The live container test and the nightly image scan both need a reference
+    # that survives `docker compose down`, which clears the project's
+    # containers and with them anything `docker compose images` could report.
+    image: pokebattlebench/showdown:local
     build:
       # This directory owns a default-deny .dockerignore file, so unrelated
       # repository content cannot enter the build context.
@@ -17,18 +22,6 @@ services:
     # especially while config.js permits tokenless development identities.
     ports:
       - "127.0.0.1:8000:8000"
-    # This lightweight probe answers only "is the TCP listener ready?".
-    # Protocol and battle behavior belong in the live container test.
-    healthcheck:
-      test:
-        - CMD
-        - node
-        - -e
-        - |
-          const socket = require("node:net").connect(8000, "127.0.0.1");
-          socket.once("connect", () => process.exit(0));
-          socket.once("error", () => process.exit(1));
-      interval: 2s
-      timeout: 1s
-      # Bound readiness to approximately 60 seconds without a fixed sleep.
-      retries: 30
+    # The health check lives in the Dockerfile so the image is correct on its
+    # own and the port is declared once. `docker compose up --wait` reads the
+    # status it produces, which is what bounds readiness without a fixed sleep.

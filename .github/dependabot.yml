@@ -43,6 +43,23 @@ updates:
       github-actions:
         patterns: ["*"]
 
+  # Keeps the digest-pinned Node base image in the Showdown Dockerfile current.
+  #
+  # Only the base image. The `SHOWDOWN_COMMIT` pin in that same file stays
+  # manual on purpose: it names a reviewed upstream revision, and the point of
+  # reviewing it is lost if a bot moves it. A human moves the Showdown pin, a
+  # bot moves the Node digest.
+  - package-ecosystem: docker
+    directory: "/server/pokemon-showdown"
+    schedule:
+      interval: weekly
+      day: friday
+      time: "12:45"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "ci"]
+    cooldown:
+      default-days: 7
+
   # Keeps the `rev:` pins in .pre-commit-config.yaml current, so nobody has to
   # remember `pre-commit autoupdate`.
   - package-ecosystem: pre-commit

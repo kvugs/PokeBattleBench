@@ -61,11 +61,16 @@ Later builds reuse Docker's cache until a build input or pin changes.
 | Follow logs | `just showdown-logs` | Streams server output; `Ctrl+C` stops following but leaves the service running. |
 | Stop | `just showdown-down` | Stops and removes project containers and networks while retaining images and build cache. |
 | Start fresh | `just showdown-reset` | Removes project containers, networks, and volumes, then rebuilds and waits for health. |
+| Verify for real | `just showdown-check` | Builds the image and exercises the full lifecycle. Minutes, and needs the network. |
 
 The server is reachable from the host at `127.0.0.1:8000`.
 Keep that loopback binding unchanged because the development configuration permits tokenless local identities and is not suitable for public access.
 The current service declares no persistent volumes and disables Showdown filesystem writes, so recreating its container restores fresh runtime state.
 `showdown-reset` also removes any Compose-managed volumes deliberately, which keeps the command correct if a temporary volume is introduced later.
+
+The workflow is checked nightly on linux/amd64 and linux/arm64.
+Docker Desktop on Apple Silicon runs the linux/arm64 image, so that leg covers it.
+`just dockerfiles` lints the Dockerfile, the Compose file, and the `.dockerignore` on every `just ci`.
 
 If startup fails, run `just showdown-status` and `just showdown-logs` before stopping the service.
 An unavailable-daemon message means the installed Docker environment is not running.

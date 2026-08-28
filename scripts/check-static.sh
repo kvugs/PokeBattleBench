@@ -28,6 +28,7 @@ hooks=(
   typos
   markdownlint-cli2
   zizmor
+  droast
 )
 manual_hooks=(
   # The normal Gitleaks hook is deliberately staged-only. This alias negates

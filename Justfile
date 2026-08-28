@@ -24,6 +24,11 @@ UV_PINNED := "env -u UV_INDEX -u UV_INDEX_URL -u UV_DEFAULT_INDEX -u UV_EXTRA_IN
 #                        just types                type check
 #                        just format               apply Ruff fixes
 #   Before pushing       just ci                   the whole required gate
+#   Local battle work    just showdown-up          start the pinned server
+#                        just showdown-logs        watch it
+#                        just showdown-down        stop it
+#   Changing the image   just dockerfiles          lint the container files
+#                        just showdown-check       build and run it for real
 #   Changing deps        just add / add-dev / update, then: just ci && just audit
 #   Before a release     just test-all + package + audit
 #   As needed            just hooks / links / cov / clean
@@ -110,6 +115,14 @@ showdown-reset: _showdown_ready
     docker compose down --volumes --remove-orphans
     docker compose up --detach --build --wait --wait-timeout 60 showdown
 
+# When: verifying the container end to end, and before merging any change to
+# the Dockerfile, Compose file, or the pinned Showdown revision. Builds a real
+# image, so a cold run takes minutes and needs internet access. CI runs this
+# nightly on both supported architectures, never on a pull request.
+# Build and exercise the real Pokemon Showdown container (CI: nightly)
+showdown-check: _showdown_ready
+    {{ UV }} pytest -m container
+
 # When: after adding or changing a hook, or on a branch where you used
 # --no-verify. Manual external hooks are intentionally excluded.
 # Run the fast pre-commit gate on all files
@@ -122,6 +135,13 @@ hooks: _ready
 links: _ready
     ./scripts/setup-lychee.sh >/dev/null
     {{ UV }} pre-commit run lychee --hook-stage manual --all-files
+
+# When: while editing the Dockerfile, Compose file, or .dockerignore. `just ci`
+# covers this too, through the pre-commit gate; this is the focused inner loop.
+# droast.toml holds the policy; scripts/setup-droast.sh pins the binary.
+# Lint Dockerfile, Compose, and .dockerignore (CI: required)
+dockerfiles: _ready
+    ./scripts/check-dockerfiles.sh
 
 # When: before pushing, usually via `just ci`. Reports only, never writes - run
 # `just format` to fix what it reports.

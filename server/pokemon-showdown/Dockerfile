@@ -13,6 +13,7 @@ FROM base AS build
 
 # Git retrieves the pinned source, and CA certificates verify GitHub's HTTPS
 # connection. Package metadata is removed in the same layer to keep it small.
+# droast ignore=DF005 reason="the base image digest already fixes the available package set; a Debian version pin breaks the build at the next point release, when the archive drops the old version"
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
@@ -22,11 +23,19 @@ RUN apt-get update \
 ARG SHOWDOWN_COMMIT
 
 # Reject branches, tags, abbreviations, and malformed input before contacting
-# GitHub. The final comparison proves Git resolved the requested revision.
-RUN if ! printf '%s\n' "${SHOWDOWN_COMMIT}" | grep -Eq '^[0-9a-f]{40}$'; then \
+# GitHub. A length test plus a character-class test does the same work as a
+# regular expression without a pipeline, whose exit status would otherwise
+# depend on the base image's shell. The final comparison proves Git resolved
+# the requested revision.
+RUN if [ "${#SHOWDOWN_COMMIT}" -ne 40 ]; then \
         echo "SHOWDOWN_COMMIT must be a full 40-character commit SHA" >&2; \
         exit 1; \
     fi \
+    && case "${SHOWDOWN_COMMIT}" in \
+        *[!0-9a-f]*) \
+            echo "SHOWDOWN_COMMIT must be lowercase hexadecimal" >&2; \
+            exit 1 ;; \
+    esac \
     && git init \
     && git remote add origin https://github.com/smogon/pokemon-showdown.git \
     && git fetch --depth=1 origin "${SHOWDOWN_COMMIT}" \
@@ -60,6 +69,13 @@ USER node
 
 # EXPOSE documents the container port. Compose controls host publication.
 EXPOSE 8000
+
+# The image reports its own readiness, so `docker run` and Compose agree
+# without repeating the port in two files. This probe answers only "is the TCP
+# listener ready?"; protocol and battle behavior belong in the live container
+# test. Thirty retries at two seconds bound readiness to roughly 60 seconds.
+HEALTHCHECK --interval=2s --timeout=1s --retries=30 \
+    CMD ["node", "-e", "const s = require('node:net').connect(8000, '127.0.0.1'); s.once('connect', () => process.exit(0)); s.once('error', () => process.exit(1));"]
 
 # Exec form preserves operating-system signals. --skip-build is safe because
 # the build stage already compiled the pinned source.

@@ -13,6 +13,56 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-28 - Let droast own Dockerfile, Compose, and ignore-file correctness
+
+**What:** Add droast as the lint authority for `Dockerfile`, `docker-compose.yaml`, and `.dockerignore`, the way Ruff owns Python and shfmt owns shell.
+`scripts/setup-droast.sh` pins one checksum-verified release binary per platform; `droast.toml` holds the policy, sets `fail-on = "warning"`, and requires every inline suppression to state a reason.
+The ShellCheck bridge runs in `required` mode against the project's existing locked binary.
+
+**Why:** droast resolves Compose services to their build contexts and checks the ignore file Docker would actually use, so one daemon-free tool covers all three artifacts.
+hadolint was the mature alternative and reads Dockerfiles only, which would have meant writing and maintaining project shell to reimplement context resolution.
+The accepted risk is that droast is young and single-maintainer; pinning it by checksum in a script means a release reaches us only when a human edits that file, which is the same deal the repository already makes with Lychee.
+`fail-on = "warning"` is not a detail: droast exits 0 on warnings by default, so without it the hook would report and pass.
+
+**Result:** The Dockerfile lost a masked pipeline exit status, and the apt version pin carries a written reason instead of being silently absent.
+Replacing droast means replacing one script, one config file, and one hook entry.
+
+## 2026-08-28 - Split container checks between a required lint and a nightly live run
+
+**What:** Static linting of the container files is a required gate through `just lint`.
+Building and running the image is a `container`-marked pytest module that runs nightly and on demand across amd64 and arm64, never on a pull request.
+Docker's own `compose build --check` runs in that nightly job rather than as a `# check=error=true` directive in the Dockerfile.
+The nightly build is deliberately uncached.
+
+**Why:** droast depends only on the commit, so it can block a merge honestly.
+A Docker build depends on Docker Hub, GitHub, and the npm registry, so it cannot.
+The `container` marker exists because `external` alone would put a cold Showdown build on every pull request, including ones that only touch a README.
+The Dockerfile directive was rejected because it would fail a contributor's local build the day an unrelated Docker upgrade adds a rule, which is a gate that moves without anyone changing this repository.
+Caching the nightly build would hide the breakage the job exists to catch.
+The health check moved from Compose into the Dockerfile so the image is correct when run directly, the port is declared once, and both droast and Trivy stop reporting a missing image-level check.
+
+**Result:** A pull request still gets its answer in minutes.
+An upstream break surfaces by the next morning as a tracked issue, because `nightly-watchdog` covers the new job.
+Apple Silicon is proven by the arm64 leg rather than by argument, since Docker Desktop runs the linux/arm64 image.
+
+## 2026-08-28 - Scan the built image, not only the repository tree
+
+**What:** The nightly container job scans the image it just built with Trivy, on one architecture, and reports without failing.
+Results go to the Security tab as SARIF.
+SBOM and provenance attestations are out of scope.
+
+**Why:** The existing `trivy` job uses `scan-type: fs`, so it sees repository files and never the Node runtime, the Debian packages, or Showdown's npm tree, which are the bulk of what the image ships.
+Reporting rather than failing was decided by measurement, not preference.
+The image at the pinned revision ships three fixed CRITICAL findings, and they have two different owners.
+`websocket-driver` (through `sockjs`) and `esbuild` are Showdown's own direct dependencies, pinned by its lockfile, so neither can be fixed here without moving `SHOWDOWN_COMMIT`, which is a reviewed decision rather than a routine bump.
+`tar` is not Showdown's at all: it is bundled inside the npm that ships in the Node base image, so a base-image bump fixes it and Dependabot now proposes those.
+Two of the three are therefore outside this repository's control, so a failing gate would have been red from its first night, and a check left red stops being a signal.
+One architecture is enough: that package set does not differ between the two legs.
+Attestations describe a pushed artifact, and this image never leaves the machine that builds it.
+
+**Result:** The image's real dependency surface is visible in the Security tab, and reviewing those findings is part of moving the pinned revision.
+Publishing the image later is the trigger to revisit attestations, not before.
+
 ## 2026-08-16 - Run Showdown as a pinned, disposable local service
 
 **What:** Build Pokémon Showdown from a reviewed full commit SHA on a digest-pinned Node image, and expose the selected revision through an image label.
