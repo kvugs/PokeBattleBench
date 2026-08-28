@@ -115,7 +115,7 @@ repos:
         name: Dependabot scans every composite action
         entry: scripts/check-composite-action-coverage.sh
         language: script
-        files: ^(\.github/.*/action\.ya?ml|\.github/dependabot\.yml)$
+        files: ^(\.github/(.*/)?action\.ya?ml|\.github/dependabot\.yml)$
         pass_filenames: false
 
   # --- Security semantics for workflows: immutable actions, least-privilege

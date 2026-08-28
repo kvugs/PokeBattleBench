@@ -14,23 +14,55 @@ set -euo pipefail
 
 CONFIG="${1:-.github/dependabot.yml}"
 
-[ -f "$CONFIG" ] || exit 0
+# Directories holding a composite action, written the way dependabot.yml
+# addresses them: repository-root-relative with a leading slash. A root-level
+# action.yml is deliberately absent; Dependabot already reads that one.
+action_dirs="$(
+  find .github -type f \( -name action.yml -o -name action.yaml \) \
+    -not -path '.github/workflows/*' |
+    sed -E 's|/action\.ya?ml$||; s|^|/|' | sort -u
+)"
+
+# No composite actions means nothing needs registering, whether or not this
+# project uses Dependabot at all.
+[ -n "$action_dirs" ] || exit 0
+
+if [ ! -f "$CONFIG" ]; then
+  echo "error: $CONFIG not found, so nothing bumps the pins in:" >&2
+  while IFS= read -r dir; do
+    echo "  $dir" >&2
+  done <<<"$action_dirs"
+  echo >&2
+  echo "Restore the Dependabot configuration, or drop this check along with the" >&2
+  echo "composite actions it protects." >&2
+  exit 1
+fi
+
+# Only the `github-actions` entry puts a directory in Dependabot's Actions
+# scan. The same path under another ecosystem must not count as registration,
+# so narrow to that block before matching.
+actions_block="$(
+  awk '
+    /^[[:space:]]*-[[:space:]]*package-ecosystem:[[:space:]]*"?github-actions"?[[:space:]]*$/ {
+      inside = 1
+      next
+    }
+    /^[[:space:]]*-[[:space:]]*package-ecosystem:/ { inside = 0 }
+    inside
+  ' "$CONFIG"
+)"
 
 missing=""
-# Directories holding a composite action, written the way dependabot.yml
-# addresses them: repository-root-relative with a leading slash.
 while IFS= read -r dir; do
   [ -n "$dir" ] || continue
   # Anchored match on the quoted or bare list item, so /a/b does not satisfy
   # /a/bc and a mention inside a comment does not count as registration.
-  if ! grep -qE "^[[:space:]]*-[[:space:]]*\"?${dir}\"?[[:space:]]*$" "$CONFIG"; then
+  if ! grep -qE "^[[:space:]]*-[[:space:]]*\"?${dir}\"?[[:space:]]*$" <<<"$actions_block"; then
     missing="${missing}  ${dir}
 "
   fi
 done <<EOF
-$(find .github -type f \( -name action.yml -o -name action.yaml \) \
-  -not -path '.github/workflows/*' |
-  sed -E 's|/action\.ya?ml$||; s|^|/|' | sort -u)
+$action_dirs
 EOF
 
 if [ -n "$missing" ]; then
