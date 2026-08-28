@@ -25,12 +25,12 @@ Issues = "https://github.com/kvugs/pokebattlebench/issues"
 # These are the only tools CI and pre-commit need.
 [dependency-groups]
 dev = [
-    "ruff==0.16.3",
+    "ruff==0.16.4",
     "basedpyright==1.39.10",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
     "pre-commit==4.6.2",
-    "commitizen==4.17.0",
+    "commitizen==4.18.0",
     "hatchling==1.32.0",
     "shellcheck-py==0.11.0.1",
 ]
