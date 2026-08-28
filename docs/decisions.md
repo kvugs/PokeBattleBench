@@ -13,6 +13,59 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-28 - Let droast own Dockerfile, Compose, and ignore-file correctness
+
+**What:** Add droast as the lint authority for `Dockerfile`, `docker-compose.yaml`, and `.dockerignore`, the way Ruff owns Python and shfmt owns shell.
+`scripts/setup-droast.sh` pins one checksum-verified release binary per platform; `droast.toml` holds the policy, sets `fail-on = "warning"`, and requires every inline suppression to state a reason.
+The ShellCheck bridge runs in `required` mode against the project's existing locked binary.
+
+**Why:** droast resolves Compose services to their build contexts and checks the ignore file Docker would actually use, so one daemon-free tool covers all three artifacts.
+hadolint was the mature alternative and reads Dockerfiles only, which would have meant writing and maintaining project shell to reimplement context resolution.
+The accepted risk is that droast is young and single-maintainer; pinning it by checksum in a script means a release reaches us only when a human edits that file, which is the same deal the repository already makes with Lychee.
+`fail-on = "warning"` is not a detail: droast exits 0 on warnings by default, so without it the hook would report and pass.
+
+**Result:** The Dockerfile lost a masked pipeline exit status, and the apt version pin carries a written reason instead of being silently absent.
+Replacing droast means replacing one script, one config file, and one hook entry.
+
+## 2026-08-28 - Split container checks between a required lint and a nightly live run
+
+**What:** Static linting of the container files is a required gate through `just lint`.
+Building and running the image is a `container`-marked pytest module that runs nightly and on demand across amd64 and arm64, never on a pull request.
+Docker's own `compose build --check` runs in that nightly job rather than as a `# check=error=true` directive in the Dockerfile.
+The nightly build is deliberately uncached.
+
+**Why:** droast depends only on the commit, so it can block a merge honestly.
+A Docker build depends on Docker Hub, GitHub, and the npm registry, so it cannot.
+The `container` marker exists because `external` alone would put a cold Showdown build on every pull request, including ones that only touch a README.
+The Dockerfile directive was rejected because it would fail a contributor's local build the day an unrelated Docker upgrade adds a rule, which is a gate that moves without anyone changing this repository.
+Caching the nightly build would hide the breakage the job exists to catch.
+The health check moved from Compose into the Dockerfile so the image is correct when run directly, the port is declared once, and both droast and Trivy stop reporting a missing image-level check.
+
+**Result:** A pull request still gets its answer in minutes.
+An upstream break surfaces by the next morning as a tracked issue, because `nightly-watchdog` covers the new job.
+Apple Silicon is proven by the arm64 leg rather than by argument, since Docker Desktop runs the linux/arm64 image.
+
+## 2026-08-28 - Scan the built image, not only the repository tree
+
+**What:** Strip npm, npx, corepack, and Yarn from the runtime stage, then scan the image the nightly job builds with Trivy, on one architecture, reporting without failing.
+Results go to the Security tab as SARIF.
+SBOM and provenance attestations are out of scope.
+
+**Why:** The existing `trivy` job uses `scan-type: fs`, so it sees repository files and never the Node runtime, the Debian packages, or Showdown's npm tree, which are the bulk of what the image ships.
+Removing the package managers is the same kind of decision as `cap_drop: ALL`: the runtime executes `node` and nothing else, and a package manager is a general-purpose tool for fetching more code.
+It does not shrink the image, because those bytes arrive in the base image layer and deleting them here only masks them.
+What it does remove is the reachable copy, and with it the `tar` finding that npm's own bundled dependencies contributed, which no change in this repository could otherwise have resolved.
+
+Reporting rather than failing was then decided by measurement, not preference.
+The remaining two fixed CRITICAL findings are both Showdown's own direct dependencies, pinned by its lockfile: `websocket-driver` through `sockjs`, and the Go standard library inside `esbuild`.
+Upstream's newest lockfile still resolves the same vulnerable versions, so moving `SHOWDOWN_COMMIT` would fix neither, and a failing gate would have been red from its first night.
+A check left red stops being a signal.
+One architecture is enough: that package set does not differ between the two legs.
+Attestations describe a pushed artifact, and this image never leaves the machine that builds it.
+
+**Result:** The image's real dependency surface is visible in the Security tab, and reviewing those findings is part of moving the pinned revision.
+Publishing the image later is the trigger to revisit attestations, not before.
+
 ## 2026-08-28 - Register composite actions with Dependabot, and check the list
 
 **What:** The `github-actions` entry in `.github/dependabot.yml` moved from `directory: "/"` to a plural `directories:` list naming both the repository root and `/.github/actions/setup-python-env`.
@@ -26,6 +79,19 @@ Folding the two pins into one by having the `template` job reuse the composite a
 
 **Result:** Composite action pins are maintained on the normal weekly schedule instead of by hand, and adding a composite action without registering it fails the required gate rather than drifting quietly.
 The one-entry-per-composite-action cost is deliberate; it is what the coverage check makes visible.
+
+## 2026-08-16 - Run Showdown as a pinned, disposable local service
+
+**What:** Build Pokémon Showdown from a reviewed full commit SHA on a digest-pinned Node image, and expose the selected revision through an image label.
+Limit the Docker context with a default-deny allowlist, run as the unprivileged Node user, and publish port 8000 only on host loopback.
+Use tokenless local identities with ordinary abuse checks, disable privileged runtime control paths and filesystem writes, and run the single-battle MVP without child workers.
+
+**Why:** Contributors need the same protocol and simulator behavior without maintaining manual clones or depending on public-server identity infrastructure.
+The MVP values a small, observable failure boundary over public-server administration, persistence, or worker scaling.
+Loopback publication is the security condition that makes tokenless development identities acceptable.
+
+**Result:** Rebuilding restores a known server state, an unexpected failure terminates clearly for the container supervisor, and no unrelated repository content enters the image build.
+Changing the upstream revision, host binding, persistence model, or worker topology requires a deliberate review of these assumptions.
 
 ## 2026-08-12 - Bootstrap Lychee directly from verified release binaries
 

@@ -10,6 +10,10 @@ Install [Git](https://git-scm.com/),
 requested Python version automatically.
 The minimum supported uv version is `0.11.31`; CI uses a pinned release for reproducibility.
 
+The `just` recipes and the helpers in `scripts/` assume a POSIX shell, and the pinned-tool bootstraps recognise only macOS and Linux.
+Windows contributors should work inside WSL.
+Git Bash supplies a shell, but `uname` reports a platform that `scripts/setup-lychee.sh` and `scripts/setup-droast.sh` reject.
+
 ```bash
 just install                                     # locked deps + git hooks
 just ci                                          # the complete required gate
@@ -35,6 +39,47 @@ git switch -c feat/short-description
 | Before a release | `just test-all`, `just package`, `just audit` |
 
 `just` with no arguments lists every recipe.
+
+## Local Pokémon Showdown server
+
+Work on battle integration requires [Docker Engine](https://docs.docker.com/engine/install/) and the [Docker Compose plugin](https://docs.docker.com/compose/install/) invoked as `docker compose`.
+[Docker Desktop](https://docs.docker.com/desktop/) provides both on macOS, Windows, and Linux, but it is not required: Linux contributors may install Docker Engine with the Compose plugin directly.
+The legacy `docker-compose` standalone command is not supported by this workflow.
+
+Confirm that the Docker daemon and required Compose readiness option are available:
+
+```bash
+docker info
+docker compose version
+docker compose up --help | grep -- --wait-timeout
+```
+
+The first image build requires outbound HTTPS access to Docker Hub for the pinned Node image, GitHub for the pinned Pokémon Showdown source, and the npm registry for dependencies locked by upstream.
+Later builds reuse Docker's cache until a build input or pin changes.
+
+| Task | Command | Result |
+| --- | --- | --- |
+| Build without starting | `just showdown-build` | Builds the pinned local image using Docker's normal cache. |
+| Start and wait | `just showdown-up` | Builds changed inputs, starts in the background, and waits up to 60 seconds for healthy status. |
+| Inspect status | `just showdown-status` | Shows whether the service is running and healthy. |
+| Follow logs | `just showdown-logs` | Streams server output; `Ctrl+C` stops following but leaves the service running. |
+| Stop | `just showdown-down` | Stops and removes project containers and networks while retaining images and build cache. |
+| Start fresh | `just showdown-reset` | Removes project containers, networks, and volumes, then rebuilds and waits for health. |
+| Verify for real | `just showdown-check` | Builds the image and exercises the full lifecycle. Minutes, and needs the network. |
+
+The server is reachable from the host at `127.0.0.1:8000`.
+Keep that loopback binding unchanged because the development configuration permits tokenless local identities and is not suitable for public access.
+The current service declares no persistent volumes and disables Showdown filesystem writes, so recreating its container restores fresh runtime state.
+`showdown-reset` also removes any Compose-managed volumes deliberately, which keeps the command correct if a temporary volume is introduced later.
+
+The workflow is checked nightly on linux/amd64 and linux/arm64.
+Docker Desktop on Apple Silicon runs the linux/arm64 image, so that leg covers it.
+`just dockerfiles` lints the Dockerfile, the Compose file, and the `.dockerignore` on every `just ci`.
+
+If startup fails, run `just showdown-status` and `just showdown-logs` before stopping the service.
+An unavailable-daemon message means the installed Docker environment is not running.
+An unsupported `--wait-timeout` message means the Docker Compose plugin must be updated.
+A port-allocation error means another process already owns host port 8000 and must be stopped before Showdown can start.
 
 ## Quality gates
 

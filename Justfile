@@ -24,6 +24,11 @@ UV_PINNED := "env -u UV_INDEX -u UV_INDEX_URL -u UV_DEFAULT_INDEX -u UV_EXTRA_IN
 #                        just types                type check
 #                        just format               apply Ruff fixes
 #   Before pushing       just ci                   the whole required gate
+#   Local battle work    just showdown-up          start the pinned server
+#                        just showdown-logs        watch it
+#                        just showdown-down        stop it
+#   Changing the image   just dockerfiles          lint the container files
+#                        just showdown-check       build and run it for real
 #   Changing deps        just add / add-dev / update, then: just ci && just audit
 #   Before a release     just test-all + package + audit
 #   As needed            just hooks / links / cov / clean
@@ -60,6 +65,71 @@ install: _ready
     uv sync --locked
     {{ UV }} pre-commit install
 
+# -----------------------------------------------------------------------------
+# LOCAL POKEMON SHOWDOWN - reproducible development server lifecycle.
+#
+# These commands require the Docker Compose plugin invoked as `docker compose`.
+# Startup waits for the Compose health check instead of using a fixed sleep.
+# -----------------------------------------------------------------------------
+
+[private]
+_showdown_ready:
+    @command -v docker >/dev/null 2>&1 || { echo "Docker is required; see CONTRIBUTING.md." >&2; exit 1; }
+    @docker info >/dev/null 2>&1 || { echo "The Docker daemon is not available; start your Docker environment." >&2; exit 1; }
+    @docker compose version >/dev/null 2>&1 || { echo "The Docker Compose plugin is required; see CONTRIBUTING.md." >&2; exit 1; }
+
+# `up --wait-timeout` is a startup option, so only the recipes that start the
+# service require it. Checking it everywhere would leave a contributor on an
+# older Compose plugin unable to stop, inspect, or read logs from a service
+# they had already started, which is exactly when they need those recipes.
+[private]
+_showdown_wait_ready: _showdown_ready
+    @docker compose up --help | grep -q -- '--wait-timeout' || { echo "Docker Compose must support 'up --wait-timeout'; update the Compose plugin." >&2; exit 1; }
+
+# When: before first use, or after changing the Dockerfile, server config, or
+# pinned Showdown revision. A cold build requires internet access.
+# Build the local Pokemon Showdown image
+showdown-build: _showdown_ready
+    docker compose build showdown
+
+# When: starting local battle development. Builds changed inputs, starts in the
+# background, and returns only when healthy or after the 60-second timeout.
+# Start Pokemon Showdown and wait until it is healthy
+showdown-up: _showdown_wait_ready
+    docker compose up --detach --build --wait --wait-timeout 60 showdown
+
+# When: checking whether the local service is running or healthy.
+# Show the Pokemon Showdown container status
+showdown-status: _showdown_ready
+    docker compose ps showdown
+
+# When: diagnosing startup, protocol, or battle failures. Ctrl+C stops following
+# output but leaves the service running.
+# Follow Pokemon Showdown logs
+showdown-logs: _showdown_ready
+    docker compose logs --follow showdown
+
+# When: finished with local battle work. Stops and removes project containers
+# and networks while retaining images and build cache.
+# Stop and remove the local Pokemon Showdown service
+showdown-down: _showdown_ready
+    docker compose down --remove-orphans
+
+# When: stale runtime state is suspected. Removes this Compose project's
+# containers, networks, and volumes before rebuilding and waiting for health.
+# Recreate Pokemon Showdown from fresh runtime state
+showdown-reset: _showdown_wait_ready
+    docker compose down --volumes --remove-orphans
+    docker compose up --detach --build --wait --wait-timeout 60 showdown
+
+# When: verifying the container end to end, and before merging any change to
+# the Dockerfile, Compose file, or the pinned Showdown revision. Builds a real
+# image, so a cold run takes minutes and needs internet access. CI runs this
+# nightly on both supported architectures, never on a pull request.
+# Build and exercise the real Pokemon Showdown container (CI: nightly)
+showdown-check: _showdown_wait_ready
+    {{ UV }} pytest -m container
+
 # When: after adding or changing a hook, or on a branch where you used
 # --no-verify. Manual external hooks are intentionally excluded.
 # Run the fast pre-commit gate on all files
@@ -72,6 +142,13 @@ hooks: _ready
 links: _ready
     ./scripts/setup-lychee.sh >/dev/null
     {{ UV }} pre-commit run lychee --hook-stage manual --all-files
+
+# When: while editing the Dockerfile, Compose file, or .dockerignore. `just ci`
+# covers this too, through the pre-commit gate; this is the focused inner loop.
+# droast.toml holds the policy; scripts/setup-droast.sh pins the binary.
+# Lint Dockerfile, Compose, and .dockerignore (CI: required)
+dockerfiles: _ready
+    ./scripts/check-dockerfiles.sh
 
 # When: before pushing, usually via `just ci`. Reports only, never writes - run
 # `just format` to fix what it reports.

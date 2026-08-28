@@ -1,0 +1,38 @@
+# droast - the Dockerfile, Compose, and .dockerignore authority for this repo,
+# the way Ruff owns Python style and shfmt owns shell formatting.
+#
+# Run it through `just lint` (or `scripts/check-dockerfiles.sh` directly).
+# `scripts/setup-droast.sh` owns the pinned, checksum-verified binary, so the
+# version moves only when a human edits that script. Do not add a `rev`-style
+# pin here; there is exactly one place the version lives.
+
+# Report everything, including informational findings. The tree is clean at
+# this level today, so an info line means something actually changed rather
+# than being permanent background noise people learn to scroll past.
+min-severity = "info"
+
+# The gate. droast exits 0 on warnings by default and fails only on errors,
+# which would make this hook report-and-pass: worse than no hook at all.
+fail-on = "warning"
+
+# Suppressions must say why, in the pragma, on the spot. Same rule the repo
+# already applies to `# noqa` and `# hadolint ignore`. An unexplained
+# suppression is a decision nobody can review later.
+inline-suppressions = true
+require-suppression-reason = true
+
+# Report unused suppressions so a pragma that has outlived its finding gets
+# removed instead of quietly protecting nothing.
+report-unused-suppressions = true
+
+# The tool's "roast" persona is off. CI logs and review comments are read by
+# people diagnosing a failure, and the technical message is the useful half.
+no-roast = true
+
+# Lint the shell inside RUN instructions with the same locked ShellCheck
+# binary that actionlint uses for workflow `run:` blocks.
+# `required` rather than `auto`: a check that silently downgrades itself when a
+# binary is missing gives different answers on different machines.
+# scripts/check-dockerfiles.sh puts the project virtualenv on PATH.
+[shellcheck]
+mode = "required"

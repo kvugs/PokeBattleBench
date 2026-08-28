@@ -28,6 +28,10 @@ Run `just` with no arguments to list every recipe. The
 [`Justfile`](Justfile) documents when each one is meant to be run. Use
 `just links` for the advisory external-link check.
 
+Battle work needs a local Pokémon Showdown server. `just showdown-up` starts
+the pinned container; [CONTRIBUTING.md](CONTRIBUTING.md) covers what Docker
+capabilities you need and the rest of the lifecycle.
+
 When maintaining the template repository itself, keep placeholders intact and
 run `just template-ci`; it materializes and verifies a disposable copy.
 

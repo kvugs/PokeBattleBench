@@ -192,3 +192,15 @@ repos:
         language: script
         files: ^uv\.lock$
         pass_filenames: false
+
+      # droast is the Dockerfile/Compose/.dockerignore authority, the way Ruff
+      # is the Python one. Local rather than the upstream hook, whose
+      # `language: rust` would compile the tool from source on a fresh
+      # machine - scripts/setup-droast.sh owns the pinned binary instead, and
+      # droast.toml owns the policy.
+      - id: droast
+        name: droast (Dockerfile, Compose, .dockerignore)
+        entry: scripts/check-dockerfiles.sh
+        language: script
+        files: (^|/)(Dockerfile|\.dockerignore|docker-compose\.yaml|droast\.toml)$|^scripts/(setup-droast|check-dockerfiles)\.sh$
+        pass_filenames: false

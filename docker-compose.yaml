@@ -1,0 +1,27 @@
+# Local development service for the pinned Pokémon Showdown environment.
+# Durable state and public access are outside the autonomous-battle MVP.
+services:
+  showdown:
+    # Name the image rather than letting Compose derive one from the directory.
+    # The live container test and the nightly image scan both need a reference
+    # that survives `docker compose down`, which clears the project's
+    # containers and with them anything `docker compose images` could report.
+    image: pokebattlebench/showdown:local
+    build:
+      # This directory owns a default-deny .dockerignore file, so unrelated
+      # repository content cannot enter the build context.
+      context: ./server/pokemon-showdown
+    # Run a tiny init as PID 1 to forward signals and reap Showdown workers.
+    init: true
+    # Showdown needs no Linux capabilities or permission escalation.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # Host loopback is the inbound security boundary. Keep this binding local,
+    # especially while config.js permits tokenless development identities.
+    ports:
+      - "127.0.0.1:8000:8000"
+    # The health check lives in the Dockerfile so the image is correct on its
+    # own and the port is declared once. `docker compose up --wait` reads the
+    # status it produces, which is what bounds readiness without a fixed sleep.

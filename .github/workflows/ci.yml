@@ -51,6 +51,14 @@ jobs:
           key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
           restore-keys: |
             pre-commit-${{ runner.os }}-
+      # scripts/check-static.sh runs the droast hook, which bootstraps this
+      # pinned binary. Cache it so the required gate does not re-download on
+      # every run, keyed on the script that owns the version and checksums.
+      - name: Restore verified droast binary
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/droast
+          key: droast-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/setup-droast.sh') }}
       - run: uv run --locked ruff check --output-format=github .
       - run: uv run --locked ruff format --check .
       - run: scripts/check-lock-index.sh

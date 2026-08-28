@@ -107,6 +107,13 @@ select = [
 [tool.ruff.lint.per-file-ignores]
 # Tests are allowed bare asserts - that is what pytest is built on.
 "tests/**" = ["S101"]
+# This module's whole job is driving the `docker compose` lifecycle, so every
+# call trips the two bandit subprocess rules. S603 wants proof the input is
+# trusted: every argument list here is a literal, and none is built from test
+# data. S607 wants an absolute path: `docker` must resolve through PATH,
+# because that is what contributors and CI runners actually invoke, and the
+# module skips when the daemon is unreachable.
+"tests/test_showdown_container.py" = ["S101", "S603", "S607"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["pokebattlebench"]
@@ -144,6 +151,13 @@ markers = [
     # to re-run until green. Slowness on its own is not a reason to mark a test:
     # a slow but self-contained test still belongs in the required gate.
     "external: reaches outside the repository (integration, network, model calls). Not in the required gate.",
+    # `container` narrows `external` rather than replacing it: every container
+    # test is also external. It exists because these tests build a Docker image
+    # from source, which costs minutes, not seconds. Putting that on every pull
+    # request would spend a cold Showdown build on branches that only touch a
+    # README. The pull-request job runs `external and not container`; the
+    # nightly job runs `container` on both supported architectures.
+    "container: builds and runs a Docker image. Nightly only, never on a pull request.",
 ]
 # Warnings are errors, so a dependency's deprecation is caught the week it lands
 # rather than the release it breaks. Allowlist a specific one like this:
