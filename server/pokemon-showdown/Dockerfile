@@ -13,7 +13,7 @@ FROM base AS build
 
 # Git retrieves the pinned source, and CA certificates verify GitHub's HTTPS
 # connection. Package metadata is removed in the same layer to keep it small.
-# droast ignore=DF005 reason="the base image digest already fixes the available package set; a Debian version pin breaks the build at the next point release, when the archive drops the old version"
+# droast ignore=DF005 reason="these packages exist only in the discarded build stage and never reach the runtime image, and what they fetch is verified against SHOWDOWN_COMMIT, so a version change cannot alter the shipped artifact; an exact Debian pin would instead break the build whenever the archive drops the old version"
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends git ca-certificates \
     && rm -rf /var/lib/apt/lists/*

@@ -77,6 +77,13 @@ _showdown_ready:
     @command -v docker >/dev/null 2>&1 || { echo "Docker is required; see CONTRIBUTING.md." >&2; exit 1; }
     @docker info >/dev/null 2>&1 || { echo "The Docker daemon is not available; start your Docker environment." >&2; exit 1; }
     @docker compose version >/dev/null 2>&1 || { echo "The Docker Compose plugin is required; see CONTRIBUTING.md." >&2; exit 1; }
+
+# `up --wait-timeout` is a startup option, so only the recipes that start the
+# service require it. Checking it everywhere would leave a contributor on an
+# older Compose plugin unable to stop, inspect, or read logs from a service
+# they had already started, which is exactly when they need those recipes.
+[private]
+_showdown_wait_ready: _showdown_ready
     @docker compose up --help | grep -q -- '--wait-timeout' || { echo "Docker Compose must support 'up --wait-timeout'; update the Compose plugin." >&2; exit 1; }
 
 # When: before first use, or after changing the Dockerfile, server config, or
@@ -88,7 +95,7 @@ showdown-build: _showdown_ready
 # When: starting local battle development. Builds changed inputs, starts in the
 # background, and returns only when healthy or after the 60-second timeout.
 # Start Pokemon Showdown and wait until it is healthy
-showdown-up: _showdown_ready
+showdown-up: _showdown_wait_ready
     docker compose up --detach --build --wait --wait-timeout 60 showdown
 
 # When: checking whether the local service is running or healthy.
@@ -111,7 +118,7 @@ showdown-down: _showdown_ready
 # When: stale runtime state is suspected. Removes this Compose project's
 # containers, networks, and volumes before rebuilding and waiting for health.
 # Recreate Pokemon Showdown from fresh runtime state
-showdown-reset: _showdown_ready
+showdown-reset: _showdown_wait_ready
     docker compose down --volumes --remove-orphans
     docker compose up --detach --build --wait --wait-timeout 60 showdown
 
@@ -120,7 +127,7 @@ showdown-reset: _showdown_ready
 # image, so a cold run takes minutes and needs internet access. CI runs this
 # nightly on both supported architectures, never on a pull request.
 # Build and exercise the real Pokemon Showdown container (CI: nightly)
-showdown-check: _showdown_ready
+showdown-check: _showdown_wait_ready
     {{ UV }} pytest -m container
 
 # When: after adding or changing a hook, or on a branch where you used
