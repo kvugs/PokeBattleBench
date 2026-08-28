@@ -12,6 +12,7 @@ duration that happens to be long enough on one machine.
 
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import socket
@@ -65,6 +66,16 @@ def _pinned_revision() -> str:
 def _container_id() -> str:
     """Return the running container's id, or an empty string when none exists."""
     return _compose("ps", "--quiet", _SERVICE).stdout.strip()
+
+
+def _published_host_ips() -> list[str]:
+    """Return every host address Docker published the service port on."""
+    container = _container_id()
+    assert container, "no container is running for the service"
+    template = '{{ json (index .NetworkSettings.Ports "' + f"{_PORT}/tcp" + '") }}'
+    raw = _docker("inspect", "--format", template, container).stdout.strip()
+    bindings: list[dict[str, str]] = json.loads(raw)
+    return [binding["HostIp"] for binding in bindings]
 
 
 def _health() -> str:
@@ -138,14 +149,23 @@ def test_service_becomes_healthy(running_service: None) -> None:
     assert _health() == "healthy"
 
 
-def test_service_answers_on_host_loopback(running_service: None) -> None:
-    """Port 8000 must be reachable on loopback, and only there.
+def test_service_publishes_only_on_loopback(running_service: None) -> None:
+    """Port 8000 must answer on loopback and be published nowhere else.
 
-    The tokenless development identities in config.js are safe because of this
-    binding, so it is a security boundary rather than a convenience.
+    Connecting to 127.0.0.1 proves something answers, not that nothing else
+    can reach it: the same connection succeeds when Docker publishes on
+    0.0.0.0. Since this binding is what makes the tokenless development
+    identities in config.js acceptable, assert the published address too.
+    An all-interfaces publication shows up here as 0.0.0.0 and ::.
     """
     with socket.create_connection((_HOST, _PORT), timeout=5):
         pass
+
+    published = _published_host_ips()
+    assert published, f"nothing is published for {_PORT}/tcp"
+    assert set(published) == {_HOST}, (
+        f"port {_PORT} is published on {sorted(published)}, expected only {_HOST}"
+    )
 
 
 def test_stops_cleanly_and_restarts_from_fresh_state(image_id: str) -> None:

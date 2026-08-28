@@ -10,6 +10,10 @@ Install [Git](https://git-scm.com/),
 requested Python version automatically.
 The minimum supported uv version is `0.11.31`; CI uses a pinned release for reproducibility.
 
+The `just` recipes and the helpers in `scripts/` assume a POSIX shell, and the pinned-tool bootstraps recognise only macOS and Linux.
+Windows contributors should work inside WSL.
+Git Bash supplies a shell, but `uname` reports a platform that `scripts/setup-lychee.sh` and `scripts/setup-droast.sh` reject.
+
 ```bash
 just install                                     # locked deps + git hooks
 just ci                                          # the complete required gate
