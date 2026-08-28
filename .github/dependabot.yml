@@ -67,6 +67,14 @@ updates:
     labels: ["dependencies", "ci"]
     cooldown:
       default-days: 7
+    # Dependabot has no concept of Node's release calendar, so "stay on LTS"
+    # has to be expressed as "never change the major". Digest refreshes still
+    # arrive, and those are what actually carry security patches. Moving to the
+    # next major is a deliberate edit once that line reaches LTS, which for
+    # even-numbered Node releases happens in October.
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
 
   # Keeps the `rev:` pins in .pre-commit-config.yaml current, so nobody has to
   # remember `pre-commit autoupdate`.

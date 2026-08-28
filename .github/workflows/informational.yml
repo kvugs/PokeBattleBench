@@ -62,12 +62,15 @@ jobs:
           exit "$code"
 
   showdown-container:
-    # Nightly and on demand only. A cold Showdown build is minutes of `npm ci`
-    # and TypeScript compilation, and these files change rarely, so putting it
-    # on every pull request would buy very little. A failure still reaches a
-    # human: `nightly-watchdog` opens a tracking issue for it.
+    # Runs wherever this workflow runs, pull requests included. It was nightly
+    # and on-demand only, on an estimate that a cold build cost four to eight
+    # minutes. Measured, the whole job is about 90 seconds, because Showdown's
+    # runtime dependency tree is small and the source is fetched at --depth=1.
+    # At that price the gap mattered more than the minutes: a pull request
+    # changing the Dockerfile is the change most likely to break the image, and
+    # it was the one class of change reaching `main` with nothing having built
+    # it. Advisory either way, so it reports rather than blocks.
     name: showdown-container (${{ matrix.arch }})
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     strategy:
       # One architecture failing must not hide the other's result, which is the
       # whole reason both legs exist.
