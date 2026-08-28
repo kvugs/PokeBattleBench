@@ -29,8 +29,16 @@ updates:
         patterns: ["*"]
         update-types: ["minor", "patch"]
 
+  # `directory: "/"` reaches .github/workflows and a root action.yml only, so
+  # pins inside a local composite action are never scanned and fall behind on
+  # every bump. Each entry below names a directory holding an action.yml.
+  # scripts/check-composite-action-coverage.sh keeps this list complete.
+  # Globbing is deliberately avoided: `**/*` makes Dependabot read a workflow
+  # twice and open duplicate PRs (dependabot-core#10884).
   - package-ecosystem: github-actions
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/setup-python-env"
     schedule:
       interval: weekly
       day: friday

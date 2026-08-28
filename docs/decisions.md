@@ -66,6 +66,20 @@ Attestations describe a pushed artifact, and this image never leaves the machine
 **Result:** The image's real dependency surface is visible in the Security tab, and reviewing those findings is part of moving the pinned revision.
 Publishing the image later is the trigger to revisit attestations, not before.
 
+## 2026-08-28 - Register composite actions with Dependabot, and check the list
+
+**What:** The `github-actions` entry in `.github/dependabot.yml` moved from `directory: "/"` to a plural `directories:` list naming both the repository root and `/.github/actions/setup-python-env`.
+`scripts/check-composite-action-coverage.sh` now asserts that every directory under `.github/` holding an `action.yml` appears in that list, wired as a local pre-commit hook and classified in `scripts/check-static.sh` so required CI runs it.
+
+**Why:** For this ecosystem Dependabot reads `.github/workflows` and a root-level `action.yml`, and nothing else, so pins inside a local composite action are never scanned.
+PR #43 showed the cost: it moved `astral-sh/setup-uv` to v10.0.1 in three workflow files and could not touch the identical pin in the composite action, leaving the required gate running two versions of the same action with nothing reporting it.
+Drift like that produces no failure, only a difference, so a passing gate is not evidence against it and it has to be caught structurally.
+The globstar form `'**/*'` was rejected because Dependabot then reads a workflow twice and opens duplicate pull requests (dependabot-core#10884).
+Folding the two pins into one by having the `template` job reuse the composite action was also rejected: `check-template.sh` must not run against an initialized tree, and it would move the last remaining pin somewhere Dependabot cannot see at all.
+
+**Result:** Composite action pins are maintained on the normal weekly schedule instead of by hand, and adding a composite action without registering it fails the required gate rather than drifting quietly.
+The one-entry-per-composite-action cost is deliberate; it is what the coverage check makes visible.
+
 ## 2026-08-16 - Run Showdown as a pinned, disposable local service
 
 **What:** Build Pokémon Showdown from a reviewed full commit SHA on a digest-pinned Node image, and expose the selected revision through an image label.
