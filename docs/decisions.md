@@ -47,16 +47,19 @@ Apple Silicon is proven by the arm64 leg rather than by argument, since Docker D
 
 ## 2026-08-28 - Scan the built image, not only the repository tree
 
-**What:** The nightly container job scans the image it just built with Trivy, on one architecture, and reports without failing.
+**What:** Strip npm, npx, corepack, and Yarn from the runtime stage, then scan the image the nightly job builds with Trivy, on one architecture, reporting without failing.
 Results go to the Security tab as SARIF.
 SBOM and provenance attestations are out of scope.
 
 **Why:** The existing `trivy` job uses `scan-type: fs`, so it sees repository files and never the Node runtime, the Debian packages, or Showdown's npm tree, which are the bulk of what the image ships.
-Reporting rather than failing was decided by measurement, not preference.
-The image at the pinned revision ships three fixed CRITICAL findings, and they have two different owners.
-`websocket-driver` (through `sockjs`) and `esbuild` are Showdown's own direct dependencies, pinned by its lockfile, so neither can be fixed here without moving `SHOWDOWN_COMMIT`, which is a reviewed decision rather than a routine bump.
-`tar` is not Showdown's at all: it is bundled inside the npm that ships in the Node base image, so a base-image bump fixes it and Dependabot now proposes those.
-Two of the three are therefore outside this repository's control, so a failing gate would have been red from its first night, and a check left red stops being a signal.
+Removing the package managers is the same kind of decision as `cap_drop: ALL`: the runtime executes `node` and nothing else, and a package manager is a general-purpose tool for fetching more code.
+It does not shrink the image, because those bytes arrive in the base image layer and deleting them here only masks them.
+What it does remove is the reachable copy, and with it the `tar` finding that npm's own bundled dependencies contributed, which no change in this repository could otherwise have resolved.
+
+Reporting rather than failing was then decided by measurement, not preference.
+The remaining two fixed CRITICAL findings are both Showdown's own direct dependencies, pinned by its lockfile: `websocket-driver` through `sockjs`, and the Go standard library inside `esbuild`.
+Upstream's newest lockfile still resolves the same vulnerable versions, so moving `SHOWDOWN_COMMIT` would fix neither, and a failing gate would have been red from its first night.
+A check left red stops being a signal.
 One architecture is enough: that package set does not differ between the two legs.
 Attestations describe a pushed artifact, and this image never leaves the machine that builds it.
 

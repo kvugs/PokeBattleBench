@@ -65,6 +65,22 @@ LABEL io.github.kvugs.pokebattlebench.showdown-revision="${SHOWDOWN_COMMIT}"
 COPY --from=build --chown=node:node /opt/pokemon-showdown ./
 COPY --chown=node:node config.js config/config.js
 
+# The runtime executes `node`, never a package manager: the build stage already
+# compiled the source, `--skip-build` skips the CLI's rebuild path, and
+# config.js disables hotpatching. Removing them is the same kind of decision as
+# `cap_drop: ALL` in Compose - it lowers what code execution inside this
+# container would be worth, because a package manager is a general-purpose tool
+# for fetching more code.
+#
+# This does not shrink the image. These bytes arrive in the base image layer,
+# and deleting them here only masks them. What it does remove is the reachable
+# copy, and with it a permanent stream of scanner findings against npm's own
+# bundled dependencies that no change in this repository could ever resolve.
+# `yarn` is a symlink, so the target under /opt has to go too.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+    /usr/local/bin/yarn /usr/local/bin/yarnpkg /opt/yarn-*
+
 USER node
 
 # EXPOSE documents the container port. Compose controls host publication.

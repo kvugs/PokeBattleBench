@@ -115,21 +115,18 @@ jobs:
       # this image ships. One leg is enough: that package set does not differ
       # between architectures, and scanning twice would double the noise.
       #
-      # This reports rather than fails, and that is deliberate. Measured on the
-      # pinned revision, the image ships three fixed CRITICAL findings, from
-      # two different owners:
+      # This reports rather than fails, and that is deliberate. After the
+      # Dockerfile removes the bundled package managers, the image ships two
+      # fixed CRITICAL findings, and both are Showdown's own direct
+      # dependencies pinned by its lockfile: websocket-driver through sockjs,
+      # and the Go standard library inside esbuild. Upstream's newest lockfile
+      # still resolves the same vulnerable versions, so neither can be fixed
+      # here without moving SHOWDOWN_COMMIT, and moving it would fix nothing.
       #
-      #   - websocket-driver (via sockjs) and esbuild are Showdown's own direct
-      #     dependencies, pinned by its lockfile. Neither can be fixed here
-      #     without moving SHOWDOWN_COMMIT, which is a reviewed decision.
-      #   - tar is not Showdown's at all. It is bundled inside the npm that
-      #     ships in the Node base image, so a base-image bump fixes it and
-      #     Dependabot now proposes those.
-      #
-      # Two of the three are therefore outside this repository's control, so a
-      # failing gate would be red from its first night, and a check left red
-      # stops being a signal. The SARIF upload puts the same information in the
-      # Security tab, to be triaged when the pinned revision is next reviewed.
+      # A failing gate would therefore be red from its first night, and a check
+      # left red stops being a signal. The SARIF upload puts the same
+      # information in the Security tab, to be triaged when the pinned revision
+      # is next reviewed.
       - name: Scan the built image
         if: matrix.arch == 'amd64'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
