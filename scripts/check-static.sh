@@ -24,6 +24,7 @@ hooks=(
   check-github-issue-config
   check-github-issue-forms
   check-dependabot
+  composite-action-coverage
   shellcheck
   typos
   markdownlint-cli2
