@@ -72,7 +72,7 @@ Keep that loopback binding unchanged because the development configuration permi
 The current service declares no persistent volumes and disables Showdown filesystem writes, so recreating its container restores fresh runtime state.
 `showdown-reset` also removes any Compose-managed volumes deliberately, which keeps the command correct if a temporary volume is introduced later.
 
-The workflow is checked nightly on linux/amd64 and linux/arm64.
+The workflow is checked on linux/amd64 and linux/arm64, on every pull request and again nightly.
 Docker Desktop on Apple Silicon runs the linux/arm64 image, so that leg covers it.
 `just dockerfiles` lints the Dockerfile, the Compose file, and the `.dockerignore` on every `just ci`.
 

@@ -62,12 +62,15 @@ jobs:
           exit "$code"
 
   showdown-container:
-    # Nightly and on demand only. A cold Showdown build is minutes of `npm ci`
-    # and TypeScript compilation, and these files change rarely, so putting it
-    # on every pull request would buy very little. A failure still reaches a
-    # human: `nightly-watchdog` opens a tracking issue for it.
+    # Runs wherever this workflow runs, pull requests included. It was nightly
+    # and on-demand only, on an estimate that a cold build cost four to eight
+    # minutes. Measured, the whole job is about 90 seconds, because Showdown's
+    # runtime dependency tree is small and the source is fetched at --depth=1.
+    # At that price the gap mattered more than the minutes: a pull request
+    # changing the Dockerfile is the change most likely to break the image, and
+    # it was the one class of change reaching `main` with nothing having built
+    # it. Advisory either way, so it reports rather than blocks.
     name: showdown-container (${{ matrix.arch }})
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     strategy:
       # One architecture failing must not hide the other's result, which is the
       # whole reason both legs exist.
@@ -125,14 +128,16 @@ jobs:
       # between architectures, and scanning twice would double the noise.
       #
       # This reports rather than fails, and that is deliberate. After the
-      # Dockerfile removes the bundled package managers, the image ships two
-      # fixed CRITICAL findings, and both are Showdown's own direct
-      # dependencies pinned by its lockfile: websocket-driver through sockjs,
-      # and the Go standard library inside esbuild. Upstream's newest lockfile
-      # still resolves the same vulnerable versions, so neither can be fixed
-      # here without moving SHOWDOWN_COMMIT, and moving it would fix nothing.
+      # Dockerfile drops the bundled package managers and esbuild, three fixed
+      # findings remain at this severity, and every one of them arrives through
+      # sockjs. Two are in websocket-driver 0.7.4, including the CRITICAL
+      # CVE-2026-54466, and both are fixed by 0.7.5; they are filed upstream as
+      # smogon/pokemon-showdown#12268. The third is in the uuid 8.3.2 copy that
+      # sockjs bundles. Showdown's lockfile pins those versions and its newest
+      # lockfile resolves the same ones, so moving SHOWDOWN_COMMIT fixes none
+      # of them.
       #
-      # A failing gate would therefore be red from its first night, and a check
+      # A failing gate would therefore be red from its first run, and a check
       # left red stops being a signal. The SARIF upload puts the same
       # information in the Security tab, to be triaged when the pinned revision
       # is next reviewed.
