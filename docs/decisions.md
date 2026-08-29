@@ -23,13 +23,15 @@ Run `showdown-container` wherever this workflow runs, pull requests included.
 
 **Why:** Three things the first nightly run and PR #48 exposed.
 `esbuild` is a build-time bundler Showdown declares as a runtime dependency, so `npm prune` keeps it, yet the runtime starts with `--skip-build` and nothing in `dist/` references it.
-It carries a vendored Go standard library that produced 53 of the 57 alerts in the first image scan, so the Security tab was 93% noise from one binary nobody executes, which is the same signal-quality problem the reporting decision was meant to avoid.
+It carries a vendored Go standard library that produced 54 of the 57 alerts in the first image scan, so 95% of the Security tab came from one binary nobody executes, which is the same signal-quality problem the reporting decision was meant to avoid.
 Deleting it in the build stage rather than the runtime stage is what makes it absent instead of masked, because that stage's final state is what `COPY --from=build` brings across.
 Dependabot has no concept of Node's release calendar, so "stay on a supported line" has to be written as "never change the major"; PR #48 offered a move from LTS to a non-LTS release that changed no finding count.
 The nightly-only choice rested on an estimate of four to eight minutes per run, and the measured job is about 90 seconds, so the reasoning behind it was simply wrong.
 A pull request touching the Dockerfile is the change most likely to break the image, and it was the one class of change that reached `main` with nothing having built it.
 
-**Result:** Fixed HIGH and CRITICAL findings against the image drop from 23 to 1, and the image from 99 MB to 95 MB.
+**Result:** Fixed HIGH and CRITICAL findings against the image drop from 57 to 3, and the image from 99 MB to 95 MB.
+Both figures come from this workflow's own scans of `main` and of this branch, twenty minutes apart on the same vulnerability database.
+All three remaining findings arrive through `sockjs`, two of them filed upstream as `smogon/pokemon-showdown#12268`.
 A broken Dockerfile now fails in review rather than the next morning.
 Reintroducing a build-time dependency into the runtime tree is the thing to watch: the removal is one line, and nothing enforces it beyond the scan.
 

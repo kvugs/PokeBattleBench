@@ -51,7 +51,7 @@ RUN if [ "${#SHOWDOWN_COMMIT}" -ne 40 ]; then \
 # with --skip-build. Removing it here rather than in the runtime stage is what
 # makes it absent instead of merely masked: this stage's final state is what
 # `COPY --from=build` brings across. It is a Go binary carrying its own vendored
-# standard library, which on its own accounted for 53 of the 57 findings in the
+# standard library, which on its own accounted for 54 of the 57 findings in the
 # first image scan. The @esbuild path is empty today and would hold the
 # per-platform packages if optional dependencies were ever enabled.
 RUN npm ci --omit=optional \

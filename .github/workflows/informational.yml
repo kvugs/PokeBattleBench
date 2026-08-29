@@ -128,14 +128,16 @@ jobs:
       # between architectures, and scanning twice would double the noise.
       #
       # This reports rather than fails, and that is deliberate. After the
-      # Dockerfile removes the bundled package managers, the image ships two
-      # fixed CRITICAL findings, and both are Showdown's own direct
-      # dependencies pinned by its lockfile: websocket-driver through sockjs,
-      # and the Go standard library inside esbuild. Upstream's newest lockfile
-      # still resolves the same vulnerable versions, so neither can be fixed
-      # here without moving SHOWDOWN_COMMIT, and moving it would fix nothing.
+      # Dockerfile drops the bundled package managers and esbuild, three fixed
+      # findings remain at this severity, and every one of them arrives through
+      # sockjs. Two are in websocket-driver 0.7.4, including the CRITICAL
+      # CVE-2026-54466, and both are fixed by 0.7.5; they are filed upstream as
+      # smogon/pokemon-showdown#12268. The third is in the uuid 8.3.2 copy that
+      # sockjs bundles. Showdown's lockfile pins those versions and its newest
+      # lockfile resolves the same ones, so moving SHOWDOWN_COMMIT fixes none
+      # of them.
       #
-      # A failing gate would therefore be red from its first night, and a check
+      # A failing gate would therefore be red from its first run, and a check
       # left red stops being a signal. The SARIF upload puts the same
       # information in the Security tab, to be triaged when the pinned revision
       # is next reviewed.
