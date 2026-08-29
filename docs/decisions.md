@@ -13,6 +13,16 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-29 - Issues name landmarks, not implementation paths
+
+**What:** The `to-gh-issues` skill previously said to keep specific file paths out of an issue because they go stale. That rule now applies only to implementation paths - the module someone is expected to create, the line they are expected to edit. Landmarks are named instead of withheld: the decision log, the ADR directory, the `just` recipes, and configuration files that are part of the project's contract.
+
+**Why:** Rewriting the eight open issues for contributors with no prior context showed the old rule causing the problem it was meant to prevent. "Recorded at the repository's required decision level" is stale-proof and useless; "recorded as an ADR in `docs/adr/`" is actionable and has not moved since the repository was created. The staleness risk is real for paths that track code and near-zero for paths that are conventions. Withholding a landmark does not protect the issue, it just guarantees the reader has to come and ask, which is the cost the rewrite existed to remove.
+
+**Result:** Issues can point at where a decision, a command, or a piece of evidence lives, while still leaving implementation layout to whoever picks the issue up. If a landmark ever does move, the fix is one search across issues, which is cheaper than every contributor asking the same question first.
+
+---
+
 ## 2026-08-29 - Do not ship the bundler, and check the image on every pull request
 
 Revises two entries below: the container check is no longer nightly-only, and `esbuild` is no longer an unfixable finding.
