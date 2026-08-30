@@ -13,6 +13,36 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-30 - The first battle format is `gen3randombattle`
+
+**What:** PokeBattleBench's first supported format is Gen 3, singles, with server-generated random teams, and each agent may read only what its own connection receives.
+The format identifier is `gen3randombattle`, advertised by the pinned server as `[Gen 3] Random Battle`.
+One challenge produces one battle, because we send no `Best of` rule.
+The collaborators took this call in a meeting; it answers the four questions #35 raised.
+This is the direction for now, not a permanent constraint.
+Any part of it can be revised by a later entry in this log.
+
+**Why:** Gen 3 is small enough to model correctly and large enough to be real.
+Abilities, held items, and the physical/special split by move type all exist, so a state tracker built for it is not a toy, while Terastallization, Dynamax, megas, and Z-moves do not.
+Singles keeps one decision per `|request|`, so the action space in #36 and the state in #37 stay minimal.
+Random teams remove team construction from the MVP. The server builds both teams, so there is no builder, no packed-team encoder, and no rejection path to handle.
+Restricting each agent to its own connection is what makes any later result mean anything; an agent that can read its opponent's private state is not measurable.
+
+**Result:** #36, #37, #38, and #40 can name a concrete format instead of deferring to this issue.
+We verified this against the pinned server (`SHOWDOWN_COMMIT=d43fb79a049f624c079c387d043ef53f62aed226`) rather than upstream documentation.
+Two guest clients challenged and accepted, both entered `battle-gen3randombattle-2` with `|init|battle`, and the room reported `|gametype|singles`, `|gen|3`, and `|tier|[Gen 3] Random Battle`.
+No team was sent by either client and no team preview occurred; the first `|request|` arrived directly.
+The server's own definition sets `team: 'random'` and no `gameType`, which is why singles and random teams need no extra rules from us.
+Two consequences to carry forward.
+`HP Percentage Mod` is in the ruleset, so an agent sees opponent HP as a percentage and never as exact points.
+A single battle per challenge is also what the server already does.
+`Best Of` is a validator rule a format opts into through its ruleset, `gen3randombattle` uses `ruleset: ['Standard']` and does not, and the `bestOfDefault` flag only sets a checkbox in the official web client.
+The verification run confirms it - one room, one battle, no `Best of` rule reported.
+The rule also rejects any series length that is not an odd number between three and nine, so "best of 1" is not a value we can send; it is the absence of the rule, which is our default as long as we append no `@@@ Best of = N` to the challenge.
+Nothing here restricts later formats; it fixes what the MVP has to work in first.
+
+---
+
 ## 2026-08-29 - Issues name landmarks, not implementation paths
 
 **What:** The `to-gh-issues` skill previously said to keep specific file paths out of an issue because they go stale. That rule now applies only to implementation paths - the module someone is expected to create, the line they are expected to edit. Landmarks are named instead of withheld: the decision log, the ADR directory, the `just` recipes, and configuration files that are part of the project's contract.
