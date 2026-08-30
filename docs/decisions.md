@@ -13,6 +13,28 @@ provenance; add project-specific decisions above them.
 
 ---
 
+## 2026-08-30 - Git hooks run through `uv run`, wired by `core.hooksPath`
+
+**What:** `just install` now sets `core.hooksPath` to the tracked `.githooks/` directory instead of running `pre-commit install`.
+The three scripts there launch `pre-commit hook-impl` through `uv run --locked`.
+`pre-commit install` is no longer used, and refuses to run at all once `core.hooksPath` is set.
+
+**Why:** `pre-commit install` bakes the installing checkout's venv into `.git/hooks/` as an absolute path.
+Git worktrees share one hooks directory, so the last worktree to install owned the hook for every worktree.
+This was not theoretical: the installed hook pointed at `PokeBattleBench-34-showdown-client/.venv/bin/python`, a checkout that no longer exists, so every commit failed with "`pre-commit` not found. Did you forget to activate your virtualenv?" while the venv it should have used was sitting right there.
+The fallback in the generated hook only finds `pre-commit` if it is already on `PATH`, which it is not unless the venv is activated.
+That failure teaches people to reach for `--no-verify`, which skips the whole gate.
+`uv run` resolves the project from the working tree git is committing in, so one config value is correct for every worktree at once and survives a deleted or rebuilt `.venv`.
+A relative `core.hooksPath` is what makes this work: it is stored once in the shared config, and each worktree resolves it against its own root.
+Verified both properties in a throwaway repository with two worktrees, and confirmed the hook still fires from a subdirectory.
+The added latency is about 20 to 40 ms per commit, measured over repeated runs.
+
+**Result:** Committing works from any worktree and any shell, with no venv activation.
+Verified with a `PATH` containing no venv: a non-Conventional Commit message is rejected by commitizen, and a well-formed one passes the full hook set.
+One sharp edge to know about. If `core.hooksPath` points at a directory that does not exist, git skips every hook silently and exits 0, so a checkout that has the config but not yet the files enforces nothing and says nothing.
+That is the state of any worktree on a branch predating this change until it picks the change up.
+`scripts/check-template.sh` now asserts the config value and the two scripts rather than `.git/hooks/`, so a template run catches a half-applied setup.
+
 ## 2026-08-30 - The first battle format is `gen3randombattle`
 
 **What:** PokeBattleBench's first supported format is Gen 3, singles, with server-generated random teams, and each agent may read only what its own connection receives.
