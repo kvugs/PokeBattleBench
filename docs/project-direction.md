@@ -66,7 +66,7 @@ Deferring these areas is a sequencing decision, not a rejection of the longer-te
 
 The meeting did not settle the following details:
 
-- the first Pokémon generation, battle format, teams, or information rules;
+- ~~the first Pokémon generation, battle format, teams, or information rules~~ - answered on 2026-08-30, see the [decision log](decisions.md): Gen 3 singles, `gen3randombattle`, server-generated random teams, and each agent reads only its own connection;
 - the Python WebSocket library and detailed package layout;
 - the local server startup and version-pinning approach;
 - the exact normalized battle-state and agent interfaces;
