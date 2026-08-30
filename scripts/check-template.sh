@@ -69,8 +69,9 @@ git -c user.name=Template -c user.email=template@example.invalid \
   commit -qm 'chore: initialize disposable project'
 
 just install
-[ -x .git/hooks/pre-commit ]
-[ -x .git/hooks/commit-msg ]
+[ "$(git config --get core.hooksPath)" = '.githooks' ]
+[ -x .githooks/pre-commit ]
+[ -x .githooks/commit-msg ]
 just ci
 just hooks
 
