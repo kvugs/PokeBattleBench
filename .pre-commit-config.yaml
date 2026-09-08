@@ -121,7 +121,7 @@ repos:
   # --- Security semantics for workflows: immutable actions, least-privilege
   #     tokens, safe triggers, and untrusted-input handling. ---
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.29.0
+    rev: v1.30.0
     hooks:
       - id: zizmor
 
@@ -147,7 +147,7 @@ repos:
 
   # --- Spelling. Rust-fast, very low false-positive rate. Tune in _typos.toml. ---
   - repo: https://github.com/crate-ci/typos
-    rev: v1.49.0
+    rev: v1.50.1
     hooks:
       - id: typos
         # Upstream writes fixes by default. Required gates report only.
