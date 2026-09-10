@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Git entry point. delegate.sh explains why hooks run through uv.
+set -euo pipefail
+exec "$(dirname "$0")/delegate.sh" commit-msg "$@"
