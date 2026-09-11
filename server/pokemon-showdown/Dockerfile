@@ -3,7 +3,7 @@
 # full 40-character SHA.
 ARG SHOWDOWN_COMMIT=d43fb79a049f624c079c387d043ef53f62aed226
 
-FROM node:24-bookworm-slim@sha256:ba849c60be29959425b8734d57b8b4b7d56f98edd9504c9af091d5281095a71e AS base
+FROM node:24-bookworm-slim@sha256:2fe369e969550cde8e867afc3fe370b260140cab4a23d467074295b42163d553 AS base
 
 # Every stage uses the same absolute path so artifacts can move between stages
 # without path translation.
