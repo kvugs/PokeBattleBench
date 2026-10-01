@@ -57,13 +57,15 @@ init *ARGS:
 _ready:
     @if [ -x ./scripts/init-project.sh ]; then ./scripts/init-project.sh --check; fi
 
-# When: once after cloning, and again if hook types change in
-# .pre-commit-config.yaml. Installs both pre-commit and commit-msg hooks from the
-# config's default_install_hook_types.
+# When: once after cloning. Points git at the tracked .githooks/ directory,
+# whose scripts launch pre-commit through `uv run`. `pre-commit install` is
+# deliberately not used, and refuses to run once core.hooksPath is set: it bakes
+# an absolute venv path into .git/hooks/, which every worktree shares, so the
+# last worktree to install broke all the others. See docs/decisions.md.
 # Install deps + git hooks (run once after cloning)
 install: _ready
     uv sync --locked
-    {{ UV }} pre-commit install
+    git config core.hooksPath .githooks
 
 # -----------------------------------------------------------------------------
 # LOCAL POKEMON SHOWDOWN - reproducible development server lifecycle.
