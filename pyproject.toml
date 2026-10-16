@@ -26,11 +26,11 @@ Issues = "https://github.com/kvugs/pokebattlebench/issues"
 [dependency-groups]
 dev = [
     "ruff==0.16.10",
-    "basedpyright==1.40.1",
+    "basedpyright==1.40.2",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
     "pre-commit==4.6.2",
-    "commitizen==4.19.0",
+    "commitizen==4.19.2",
     "hatchling==1.32.4",
     "shellcheck-py==0.11.0.1",
 ]
