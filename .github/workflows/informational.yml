@@ -104,10 +104,10 @@ jobs:
       # the second, both steps resolve the newest release at run time, so this
       # job could break overnight with nothing in the repository having changed.
       # Same reasoning as the pinned uv version in the `template` job.
-      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           version: v0.36.1
-      - uses: docker/setup-compose-action@4eb059ff7f16592f9c84d5ca339c53cb7c5064e2 # v2.3.0
+      - uses: docker/setup-compose-action@54042514f505b273907334ae2b9cdbb9a0213c1a # v2.4.0
         with:
           version: v5.5.0
 
@@ -156,7 +156,7 @@ jobs:
           exit-code: "0"
       - name: Upload image scan results
         if: always() && matrix.arch == 'amd64'
-        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         continue-on-error: true # SARIF upload needs a public repo or GHAS.
         with:
           sarif_file: trivy-image.sarif
@@ -189,7 +189,7 @@ jobs:
             tail -n 25 coverage.txt || true
             echo '```'
           } >>"$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: coverage-xml
@@ -249,7 +249,7 @@ jobs:
           exit-code: "1"
       - name: Upload results
         if: always()
-        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4.37.8
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         continue-on-error: true # SARIF upload needs a public repo or GHAS.
         with:
           sarif_file: trivy.sarif
